@@ -9,6 +9,9 @@ verify_ssl = true
 numpy = "==1.19.3"
 pandas = "*"
 pillow = "*"
+flake8 = "*"
+pep8-naming = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.8"

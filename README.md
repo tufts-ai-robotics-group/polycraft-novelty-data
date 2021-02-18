@@ -7,6 +7,7 @@ Visual novelty datasets for the Polycraft domain.
 Data should be downloaded from the ```datasets``` folder of the [SAIL-ON Box](https://tufts.app.box.com/folder/112726258179).
 
 ## Installation
+
 If you do not have Pipenv installed, run the following:
 ```
 pip install pipenv
@@ -14,6 +15,13 @@ pip install pipenv
 All dependencies can be installed within a Pipenv with the following commands:
 ```
 pipenv install
+```
+
+## Testing
+
+To run unit tests, run the following command:
+```
+pipenv run python -m pytest
 ```
 
 ## Adding Data to Repository
