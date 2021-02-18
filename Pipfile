@@ -12,6 +12,7 @@ pillow = "*"
 flake8 = "*"
 pep8-naming = "*"
 pytest = "*"
+torch = "*"
 
 [requires]
 python_version = "3.8"
