@@ -4,7 +4,7 @@ Visual novelty datasets for the Polycraft domain.
 
 ## Downloading Data
 
-Data should be downloaded from the datasets folders of the [SAIL-ON Box](https://tufts.app.box.com/folder/112726258179).
+Data should be downloaded from the ```datasets``` folder of the [SAIL-ON Box](https://tufts.app.box.com/folder/112726258179).
 
 ## Installation
 If you do not have Pipenv installed, run the following:
@@ -18,7 +18,7 @@ pipenv install
 
 ## Adding Data to Repository
 
-1. Create a folder within either the ```normal_data``` or ```novel_data``` folder in the datasets folder of the [SAIL-ON Box](https://tufts.app.box.com/folder/112726258179). Ensure the folder has a name that clearly describes how it is different from other data.
+1. Create a folder within either the ```normal_data``` or ```novel_data``` folder in the ```datasets``` folder of the [SAIL-ON Box](https://tufts.app.box.com/folder/112726258179). Ensure the folder has a name that clearly describes how it is different from other data.
 
 2. Upload the data to the Box folder.
 
