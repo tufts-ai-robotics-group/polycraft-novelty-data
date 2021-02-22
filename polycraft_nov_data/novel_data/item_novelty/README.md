@@ -10,7 +10,8 @@ Data that contains novel items.
    If you want to have height / position change AND a novel item, set pos_change = True (line 209). For
    a novel item without any change in item positions set pos_change = False.
    
-   Run polycraft_tufts/novelty_generator/novelty_generator.py with arguments -novelty lvl-1 -parameter x. 
+   Run polycraft_tufts/novelty_generator/novelty_generator.py with arguments -novelty lvl-1 -parameter x.
+   (x = 1 if we only want one novel item.) 
 
 3. Run polycraft_tufts/utils/save_screen.py 
 
