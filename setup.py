@@ -10,8 +10,11 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8, <4",
     install_requires=[
+        "matplotlib",
         "numpy",
+        "scikit-image",
         # dev packages, not installing correctly when in extras_require
+        "autopep8",
         "flake8",
         "pep8-naming",
         "pytest",
