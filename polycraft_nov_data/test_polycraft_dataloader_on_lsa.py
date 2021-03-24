@@ -9,12 +9,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import torch.optim as optim
+
+from polycraft_nov_det.data.polycraft_dataloader import create_data_generators
+
 from polycraft_nov_det.models.lsa.LSA_cifar10_no_est import LSACIFAR10NoEst as LSANet
 from torch.utils.tensorboard import SummaryWriter
-import torch.optim as optim
-from polycraft_nov_det.plot import plot_reconstruction
 
-from polycraft_nov_data.dataloader import create_data_generators
+from plot import plot_reconstruction
+
 
 
 def train():
@@ -28,8 +31,9 @@ def train():
 
     # get dataloaders
     train_loader, valid_loader, test_loader = create_data_generators(
-        scale, 1, shuffle=True, classes_to_include='normal')
-
+                                                            shuffle=True, 
+                                                            novelty_type='normal')
+   
     print('Size of training loader', len(train_loader))
     print('Size of validation loader', len(valid_loader))
     print('Size of test loader', len(test_loader))
