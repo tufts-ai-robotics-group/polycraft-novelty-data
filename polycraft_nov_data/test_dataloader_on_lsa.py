@@ -14,8 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
 from polycraft_nov_det.plot import plot_reconstruction
 
-import polycraft_nov_data.dataloader as mydataloader
-from polycraft_nov_data.main import create_data_generators
+from polycraft_nov_data.dataloader import create_data_generators
 
 
 def train():
