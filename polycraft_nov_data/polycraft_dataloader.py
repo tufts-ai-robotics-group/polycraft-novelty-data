@@ -8,7 +8,7 @@ import json
 from skimage.transform import rescale
 import re
 
-def create_data_generators(shuffle=True, novelty_type='normal', item_to_include = 'None'):
+def create_data_generators(shuffle=True, novelty_type='normal', item_to_include = None):
     """ Create train/valid/test loaders for this dataset
 
     Args
