@@ -18,22 +18,19 @@ def convert_item_to_encoded_item(item):
 
     encoded_item = []
 
-    minecraft_item_names = ['minecraft:anvil', 'minecraft:beacon', 'minecraft:bed', 'minecraft:bedrock',
-                            'minecraft:bookshelf', 'minecraft:brewing_stand', 'minecraft:cactus', 'minecraft:cake',
-                            'minecraft:cauldron', 'minecraft:clay', 'minecraft:coal_block', 'minecraft:cobblestone',
-                            'minecraft:crafting_table', 'minecraft:daylight_detector', 'minecraft:deadbush',
-                            'minecraft:diamond_block', 'minecraft:dirt', 'minecraft:dispenser', 'minecraft:dropper',
-                            'minecraft:emerald_block', 'minecraft:enchanting_table', 'minecraft:glowstone',
-                            'minecraft:gravel', 'minecraft:hopper', 'minecraft:ice', 'minecraft:iron_block',
-                            'minecraft:jukebox', 'minecraft:lapis_block', 'minecraft:leaves', 'minecraft:lever',
-                            'minecraft:log', 'minecraft:mycelium', 'minecraft:netherrack', 'minecraft:noteblock',
-                            'minecraft:obsidian', 'minecraft:piston', 'minecraft:planks', 'minecraft:prismarine',
-                            'minecraft:pumpkin', 'minecraft:quartz_block', 'minecraft:reeds', 'minecraft:sand',
-                            'minecraft:sandstone', 'minecraft:sapling', 'minecraft:sea_lantern', 'minecraft:slime',
-                            'minecraft:snow', 'minecraft:soul_sand', 'minecraft:sponge', 'minecraft:stone',
-                            'minecraft:stonebrick', 'minecraft:tallgrass', 'minecraft:tnt', 'minecraft:torch',
-                            'minecraft:vine', 'minecraft:waterlily', 'minecraft:web', 'minecraft:wheat',
-                            'minecraft:wool']
+    minecraft_item_names = [
+        'anvil', 'beacon', 'bed', 'bedrock', 'bookshelf', 'brewing_stand',
+        'cactus', 'cake', 'cauldron', 'clay', 'coal_block', 'cobblestone',
+        'crafting_table', 'daylight_detector', 'deadbush', 'diamond_block',
+        'dirt', 'dispenser', 'dropper', 'emerald_block', 'enchanting_table',
+        'glowstone', 'gravel', 'hopper', 'ice', 'iron_block', 'jukebox',
+        'lapis_block', 'leaves', 'lever', 'log', 'mycelium', 'netherrack',
+        'noteblock', 'obsidian', 'piston', 'planks', 'prismarine', 'pumpkin',
+        'quartz_block', 'reeds', 'sand', 'sandstone', 'sapling', 'sea_lantern',
+        'slime', 'snow', 'soul_sand', 'sponge', 'stone', 'stonebrick',
+        'tallgrass', 'tnt', 'torch', 'vine', 'waterlily', 'web', 'wheat', 'wool'
+    ]
+    minecraft_item_names = ["minecraft:" + name for name in minecraft_item_names]
 
     for item_name in minecraft_item_names:
         if item_name == item:
@@ -72,17 +69,17 @@ def count_png_in_env(path, env_name, env_idx):
 
     img_ctr = 0
 
-    with zipfile.ZipFile(path, 'r') as zipObj:
-        listOfFileNames = zipObj.namelist()
+    with zipfile.ZipFile(path, 'r') as zip:
+        file_names = zip.namelist()
 
-        for fileName in listOfFileNames:
+        for file_name in file_names:
 
             # We need the path separation symbol in order to not count
             # environemnts which only contain the env_idx (4 --> 41)
-            if fileName.find(env_name + str(env_idx) + '/') != -1 or \
-                    fileName.find(env_name + str(env_idx) + '\\') != -1:
+            if file_name.find(env_name + str(env_idx) + '/') != -1 or \
+                    file_name.find(env_name + str(env_idx) + '\\') != -1:
 
-                if fileName.find('.png') != -1:
+                if file_name.find('.png') != -1:
 
                     img_ctr += 1
 
@@ -160,18 +157,18 @@ class PolycraftDataset(Dataset):
 
             ctr += 1
 
-            with zipfile.ZipFile(path, 'r') as zipObj:
-                listOfFileNames = zipObj.namelist()
+            with zipfile.ZipFile(path, 'r') as zip:
+                file_names = zip.namelist()
 
-                for fileName in listOfFileNames:
+                for file_name in file_names:
 
-                    if fileName.find(env_name + str(env_idx)) != -1:
+                    if file_name.find(env_name + str(env_idx)) != -1:
 
                         # Unzip novelty description file
-                        if fileName.find('novelty_description.json') != -1:
+                        if file_name.find('novelty_description.json') != -1:
 
-                            zipObj.extract(fileName, root)
-                            json_path = root + os.sep + fileName
+                            zip.extract(file_name, root)
+                            json_path = root + os.sep + file_name
                             # print(json_path)
                             find_json = True
 
@@ -179,20 +176,20 @@ class PolycraftDataset(Dataset):
                                 nov_dict = json.load(json_file)
 
                         # Unzip  images
-                        if fileName.find('.png') != -1:
+                        if file_name.find('.png') != -1:
 
-                            if not fileName in old_img:
-                                old_img.append(fileName)
+                            if file_name not in old_img:
+                                old_img.append(file_name)
 
-                                zipObj.extract(fileName, root)
+                                zip.extract(file_name, root)
                                 find_png = True
 
-                                # Read image, remove "Minecraft score bar", rescale, normalize between 0 and 1
-                                png_path = root + os.sep + fileName
+                                # Read image, remove "Minecraft score bar", rescale
+                                png_path = root + os.sep + file_name
                                 image = io.imread(png_path)  # Height x Width x RGB Channels
                                 patches = preprocess_image(image, self.scale_factor, self.p_size)
 
-                                # Convert novelty description json file to encoded novelty description vector
+                                # Convert novelty description json file to encoded vector
                                 nov_vector = nov_dict_to_encoded_nov(nov_dict)
 
                                 break
