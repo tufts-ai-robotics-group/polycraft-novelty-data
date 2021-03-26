@@ -1,38 +1,28 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 12 12:52:53 2021
-
-@author: SchneiderS
-"""
-from torch.utils.data import DataLoader, ConcatDataset
-import numpy as np
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
 import torch.optim as optim
-
-from polycraft_nov_det.data.polycraft_dataloader import create_data_generators
-
-from polycraft_nov_det.models.lsa.LSA_cifar10_no_est import LSACIFAR10NoEst as LSANet
 from torch.utils.tensorboard import SummaryWriter
 
-from plot import plot_reconstruction
+from polycraft_dataloader import create_data_generators
+from polycraft_dataloader import normalize_img
+from polycraft_nov_det.models.lsa.LSA_cifar10_no_est import LSACIFAR10NoEst as LSANet
+from polycraft_nov_det.plot import plot_reconstruction_rgb
 
 
 
 def train():
 
-    scale = 0.25
-
     # batch size depends on scale we use 0.25 --> 6, 0.5 --> 42, 0.75 --> 110, 1 --> 195
-    batch_size = 6
+    scale = 0.5
+    batch_size = 42
 
     pc_input_shape = (3, 32, 32)  # color channels, height, width
 
     # get dataloaders
+    print('Download zipped files (if necessary), extract the ones we want to have and generate dataloaders.')
     train_loader, valid_loader, test_loader = create_data_generators(
                                                             shuffle=True, 
-                                                            novelty_type='normal')
+                                                            novelty_type='normal', scale_level=scale)
    
     print('Size of training loader', len(train_loader))
     print('Size of validation loader', len(valid_loader))
@@ -43,9 +33,9 @@ def train():
 
     # define training constants
     lr = 1e-3
-    epochs = 10
+    epochs = 1000
     loss_func = nn.MSELoss()
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # construct model
     model = LSANet(pc_input_shape, batch_size)
@@ -108,7 +98,7 @@ def train():
 
             x = flat_patches[0].float().to(device)
             x_rec, z = model(x)
-
+            
             batch_loss = loss_func(x, x_rec)
             valid_loss += batch_loss.item() * batch_size
 
@@ -118,12 +108,13 @@ def train():
         print('Average validation loss  ', av_valid_loss)
 
         # get reconstruction visualization
-        writer.add_figure("Reconstruction Vis", plot_reconstruction(x, x_rec), epoch)
+        x_rec = normalize_img(x_rec)
+        writer.add_figure("Reconstruction Vis", plot_reconstruction_rgb(x, x_rec), epoch)
 
         # TODO add latent space visualization (try PCA or t-SNE for projection)
         # save model
-        # if (epoch + 1) % (epochs // 10) == 0 or epoch == epochs - 1:
-        #    torch.save(model.state_dict(), "saved_statedict/LSA_polycraft_no_est_%d.pt" % (epoch + 1,))
+        if ((epoch + 1) %  20) == 0 :
+            torch.save(model.state_dict(), "saved_statedict/LSA_polycraft_no_est_%d.pt" % (epoch + 1,))
 
     return model
 

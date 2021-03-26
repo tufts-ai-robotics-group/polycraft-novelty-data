@@ -8,7 +8,7 @@ import json
 from skimage.transform import rescale
 import re
 
-def create_data_generators(shuffle=True, novelty_type='normal', item_to_include = None):
+def create_data_generators(shuffle=True, novelty_type='normal', item_to_include = 'None', scale_level=1):
     """ Create train/valid/test loaders for this dataset
 
     Args
@@ -25,6 +25,9 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include 
     item_to_include (string)
          If given, the specific item is searched for and its json/images used.
          'minecraft:bed', 'minecraft:clay', ...
+    scale (float)
+         Can be set explicitely in test_polycraft_dataloader_on_lsa.py file according
+         to batch size, set to 1 (no rescaling) per default
          
     Returns
     -------
@@ -39,10 +42,8 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include 
     """
 
     total_noi_i = 10 # Number of processed images from one environemnt i
-    noe = 4  # Numer of environments 
+    noe = 1  # Numer of environments 
     n_p = 32  # Patch size, patch --> n_p x n_p
-    scale = 0.75  # Scale factor, use 1 for original scale
-    
     
     novelty = novelty_type
     datasets = []
@@ -52,7 +53,7 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include 
         #Load only images of the environment which includes images of the stated novel item.
         if item_to_include != None and novelty == 'novel_item': 
             dataset_env_i = PolycraftDatasetWithSpecificItem(
-                nov_type=novelty, noi=total_noi_i, env_idx=i, p_size=n_p, scale_factor=scale,
+                nov_type=novelty, noi=total_noi_i, env_idx=i, p_size=n_p, scale_factor=scale_level,
                                                       item_name=item_to_include)
             datasets.append(dataset_env_i)
             #We only process the one environment with the item (maybe change this 
@@ -62,7 +63,7 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include 
         #No specific item given which should be included. 
         else:
             dataset_env_i = PolycraftDatasetNoSpecificItem(
-                nov_type=novelty, noi=total_noi_i, env_idx=i, p_size=n_p, scale_factor=scale)
+                nov_type=novelty, noi=total_noi_i, env_idx=i, p_size=n_p, scale_factor=scale_level)
             datasets.append(dataset_env_i)
             
         
