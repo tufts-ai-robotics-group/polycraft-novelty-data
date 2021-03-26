@@ -127,20 +127,6 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include=
     return train_loader, valid_loader, test_loader
 
 
-def normalize_img(img):
-    minval = img.min()
-    maxval = img.max()
-
-    diff = maxval - minval
-
-    if diff > 0:
-        img_norm = (img - minval) / diff
-    else:
-        img_norm = torch.zeros(img.size())
-
-    return img_norm
-
-
 def convert_item_to_encoded_item(item):
 
     encoded_item = []
@@ -345,23 +331,6 @@ class PolycraftDatasetNoSpecificItem(Dataset):
             print('No valid novelty type!')
 
         return path, root, env_name
-
-    def crop_and_normalize(self, image):
-
-        image = image[0:234, :, :]
-        image = rescale(image, (self.scale_factor, self.scale_factor, 1), anti_aliasing=True)
-        image = normalize_img(image)
-
-        return image
-
-    def extract_patches(self, image):
-
-        # Extract patches
-        stride = int(self.p_size/2)  # patch stride
-        image = torch.from_numpy(image)
-        patches = image.unfold(0, self.p_size, stride).unfold(1, self.p_size, stride)
-
-        return patches
 
 
 class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
