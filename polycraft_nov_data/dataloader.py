@@ -14,20 +14,6 @@ import json
 from skimage.transform import rescale
 
 
-def normalize_img(img):
-    minval = img.min()
-    maxval = img.max()
-
-    diff = maxval - minval
-
-    if diff > 0:
-        img_norm = (img - minval) / diff
-    else:
-        img_norm = torch.zeros(img.size())
-
-    return img_norm
-
-
 def convert_item_to_encoded_item(item):
 
     encoded_item = []
@@ -101,6 +87,30 @@ def count_png_in_env(path, env_name, env_idx):
                     img_ctr += 1
 
     return img_ctr
+
+
+def preprocess_image(image, scale_factor, p_size):
+    image = crop_and_scale(image, scale_factor)
+    image = extract_patches(image, p_size)
+    return image
+
+
+def crop_and_scale(image, scale_factor):
+
+    image = image[0:234, :, :]
+    image = rescale(image, (scale_factor, scale_factor, 1), anti_aliasing=True)
+
+    return image
+
+
+def extract_patches(image, p_size):
+
+    # Extract patches
+    stride = int(p_size/2)  # patch stride
+    image = torch.from_numpy(image)
+    patches = image.unfold(0, p_size, stride).unfold(1, p_size, stride)
+
+    return patches
 
 
 class PolycraftDataset(Dataset):
@@ -180,12 +190,7 @@ class PolycraftDataset(Dataset):
                                 # Read image, remove "Minecraft score bar", rescale, normalize between 0 and 1
                                 png_path = root + os.sep + fileName
                                 image = io.imread(png_path)  # Height x Width x RGB Channels
-                                # print(png_path)
-                                # print('png_path',png_path)
-                                image = self.crop_and_normalize(image)
-
-                                # Extract p_size x p_size patches, patches overlap each other by half
-                                patches = self.extract_patches(image)
+                                patches = preprocess_image(image, self.scale_factor, self.p_size)
 
                                 # Convert novelty description json file to encoded novelty description vector
                                 nov_vector = nov_dict_to_encoded_nov(nov_dict)
@@ -238,20 +243,3 @@ class PolycraftDataset(Dataset):
             print('No valid novelty type!')
 
         return path, root, env_name
-
-    def crop_and_normalize(self, image):
-
-        image = image[0:234, :, :]
-        image = rescale(image, (self.scale_factor, self.scale_factor, 1), anti_aliasing=True)
-        image = normalize_img(image)
-
-        return image
-
-    def extract_patches(self, image):
-
-        # Extract patches
-        stride = int(self.p_size/2)  # patch stride
-        image = torch.from_numpy(image)
-        patches = image.unfold(0, self.p_size, stride).unfold(1, self.p_size, stride)
-
-        return patches
