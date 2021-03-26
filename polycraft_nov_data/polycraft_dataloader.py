@@ -24,6 +24,30 @@ minecraft_item_names = [
 minecraft_item_names = ["minecraft:" + name for name in minecraft_item_names]
 
 
+def preprocess_image(image, scale_factor, p_size):
+    image = crop_and_scale(image, scale_factor)
+    image = extract_patches(image, p_size)
+    return image
+
+
+def crop_and_scale(image, scale_factor):
+
+    image = image[0:234, :, :]
+    image = rescale(image, (scale_factor, scale_factor, 1), anti_aliasing=True)
+
+    return image
+
+
+def extract_patches(image, p_size):
+
+    # Extract patches
+    stride = int(p_size/2)  # patch stride
+    image = torch.from_numpy(image)
+    patches = image.unfold(0, p_size, stride).unfold(1, p_size, stride)
+
+    return patches
+
+
 def create_data_generators(shuffle=True, novelty_type='normal', item_to_include='None',
                            scale_level=1):
     """ Create train/valid/test loaders for this dataset
@@ -232,7 +256,7 @@ class PolycraftDatasetNoSpecificItem(Dataset):
         # Check if there are noi images in the environment, if not use the maximum number
         if(noi >= noi_check):
             noi = noi_check
-            print('noi and/or noe too large, all available images are used.')
+            print('noi is too large, all available images are used.')
 
         ctr = 0
 
@@ -267,17 +291,12 @@ class PolycraftDatasetNoSpecificItem(Dataset):
                                 zip.extract(file_name, root)
                                 find_png = True
 
-                                # Read image, remove "Minecraft score bar", rescale, normalize between 0 and 1
+                                # Read image, remove "Minecraft score bar", rescale
                                 png_path = root + os.sep + file_name
                                 image = io.imread(png_path)  # Height x Width x RGB Channels
-                                # print(png_path)
-                                # print('png_path',png_path)
-                                image = self.crop_and_normalize(image)
+                                patches = preprocess_image(image, self.scale_factor, self.p_size)
 
-                                # Extract p_size x p_size patches, patches overlap each other by half
-                                patches = self.extract_patches(image)
-
-                                # Convert novelty description json file to encoded novelty description vector
+                                # Convert novelty description json file to encoded vector
                                 nov_vector = nov_dict_to_encoded_nov(nov_dict)
 
                                 break
@@ -379,7 +398,6 @@ class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
             is_item_minecraft_item = check_if_item_exists(self.item_name)
 
         nov_dict = {}
-        nov_dict_item = {}
         old_img = []
         class_path = ''
 
@@ -416,14 +434,13 @@ class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
                             if self.item_name is None:
                                 print('json path ', json_path)
                                 class_path = file_name
-                                nov_dict_item = nov_dict
 
                                 env_idx = [int(s) for s in re.findall(r'\d+', json_path)][0]
                                 noi_check = count_png_in_env(path, env_name, env_idx)
 
                                 if(noi >= noi_check):
                                     noi = noi_check
-                                    print('noi and/or noe too large, all available images are used.')
+                                    print('noi is too large, all available images are used.')
 
                                 break
 
@@ -435,7 +452,6 @@ class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
                             if is_item_present:
                                 class_path = file_name
                                 env_idx = [int(s) for s in re.findall(r'\d+', json_path)][0]
-                                nov_dict_item = nov_dict
 
                                 noi_check = count_png_in_env(path, env_name, env_idx)
 
@@ -444,10 +460,11 @@ class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
                                       noi_check, ', env with item: ', env_idx)
                                 print(json_path)
 
-                                # Check if there are noi images in the environment, if not use the maximum number
+                                # Check if there are noi images in the environment,
+                                # if not use the maximum number
                                 if(noi >= noi_check):
                                     noi = noi_check
-                                    print('noi and/or noe too large, all available images are used.')
+                                    print('noi is too large, all available images are used.')
 
             print('Class path', class_path)
             with zipfile.ZipFile(path, 'r') as zip:
@@ -464,19 +481,13 @@ class PolycraftDatasetWithSpecificItem(PolycraftDatasetNoSpecificItem):
 
                                 zip.extract(file_name, root)
 
-                                # Read image, remove "Minecraft score bar", rescale, normalize between 0 and 1
+                                # Read image, remove "Minecraft score bar", rescale
                                 png_path = root + os.sep + file_name
                                 image = io.imread(png_path)  # Height x Width x RGB Channels
-                                print('png_path', png_path)
-                                print('--------------------------------------')
+                                patches = preprocess_image(image, self.scale_factor, self.p_size)
 
-                                image = self.crop_and_normalize(image)
-
-                                # Extract p_size x p_size patches, patches overlap each other by half
-                                patches = self.extract_patches(image)
-
-                                # Convert novelty description json file to encoded novelty description vector
-                                nov_vector = nov_dict_to_encoded_nov(nov_dict_item)
+                                # Convert novelty description json file to encoded vector
+                                nov_vector = nov_dict_to_encoded_nov(nov_dict)
 
                                 break
 
