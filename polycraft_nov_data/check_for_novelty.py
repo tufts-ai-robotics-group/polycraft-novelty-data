@@ -105,5 +105,5 @@ def check_image_for_novelty(models_state_dict_path):
            
 if __name__ == '__main__':
     
-    state_dict_path = 'saved_statedict_polycraft_scale0_5/LSA_polycraft_no_est_740.pt'  
+    state_dict_path = 'saved_statedict/saved_statedict_polycraft_scale0_5/LSA_polycraft_no_est_1000.pt'  
     check_image_for_novelty(state_dict_path)
