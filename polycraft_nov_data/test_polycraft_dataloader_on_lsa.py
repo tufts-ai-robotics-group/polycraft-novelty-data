@@ -13,8 +13,8 @@ from polycraft_nov_det.plot import plot_reconstruction_rgb
 def train():
 
     # batch size depends on scale we use 0.25 --> 6, 0.5 --> 42, 0.75 --> 110, 1 --> 195
-    scale = 0.5
-    batch_size = 42
+    scale = 0.75
+    batch_size = 110
 
     pc_input_shape = (3, 32, 32)  # color channels, height, width
 
@@ -24,18 +24,18 @@ def train():
                                                             shuffle=True, 
                                                             novelty_type='normal', scale_level=scale)
    
-    print('Size of training loader', len(train_loader))
-    print('Size of validation loader', len(valid_loader))
-    print('Size of test loader', len(test_loader))
+    print('Size of training loader', len(train_loader), flush=True)
+    print('Size of validation loader', len(valid_loader), flush=True)
+    print('Size of test loader', len(test_loader), flush=True)
 
     # get Tensorboard writer
-    writer = SummaryWriter("runs")
+    writer = SummaryWriter("runs_0_75")
 
     # define training constants
     lr = 1e-3
     epochs = 1000
     loss_func = nn.MSELoss()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 
     # construct model
     model = LSANet(pc_input_shape, batch_size)
@@ -47,7 +47,7 @@ def train():
     # train model
     for epoch in range(epochs):
 
-        print('---------- Epoch ', epoch, ' -------------')
+        print('---------- Epoch ', epoch, ' -------------', flush=True)
 
         train_loss = 0
 
@@ -82,7 +82,7 @@ def train():
         # calculate and record train loss
         av_train_loss = train_loss / len(train_loader)
         writer.add_scalar("Average Train Loss", av_train_loss, epoch)
-        print('Average training loss  ', av_train_loss)
+        print('Average training loss  ', av_train_loss, flush=True)
 
         # get validation loss
         valid_loss = 0
@@ -105,7 +105,7 @@ def train():
         av_valid_loss = valid_loss / len(valid_loader)
         writer.add_scalar("Average Validation Loss", av_valid_loss, epoch)
 
-        print('Average validation loss  ', av_valid_loss)
+        print('Average validation loss  ', av_valid_loss, flush=True)
 
         # get reconstruction visualization
         x_rec = normalize_img(x_rec)
@@ -114,7 +114,7 @@ def train():
         # TODO add latent space visualization (try PCA or t-SNE for projection)
         # save model
         if ((epoch + 1) %  20) == 0 :
-            torch.save(model.state_dict(), "saved_statedict/LSA_polycraft_no_est_%d.pt" % (epoch + 1,))
+            torch.save(model.state_dict(), "saved_statedict/LSA_polycraft_no_est_075_%d.pt" % (epoch + 1,))
 
     return model
 
