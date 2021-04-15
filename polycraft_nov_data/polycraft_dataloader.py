@@ -118,7 +118,9 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include=
     valid_noi = int(0.15 * total_noi)  # Number of images used for validation (15 %)
     test_noi = total_noi - train_noi - valid_noi  # Number of images used for testing (15 %)
     train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(
-        final_dataset, [train_noi, valid_noi, test_noi])
+        final_dataset, [train_noi, valid_noi, test_noi],
+        generator=torch.Generator().manual_seed(42)
+    )
 
     train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=True)
