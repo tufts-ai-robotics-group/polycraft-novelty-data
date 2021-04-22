@@ -132,3 +132,6 @@ dmypy.json
 .vscode
 
 reqlib-metadata
+
+# ignore downloaded copies of datasets
+polycraft_nov_data/dataset/**/env_*
