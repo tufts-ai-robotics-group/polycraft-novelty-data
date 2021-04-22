@@ -16,16 +16,10 @@ DATA_URLS = {
     "height": "https://tufts.box.com/shared/static/3yfjmkm79yq2rl60kbhnq5eey530iqcv.zip",
 }
 
-DATA_FOLDERS = {
-    "normal": "normal",
-    "item": os.path.join("novel", "item"),
-    "height": os.path.join("novel", "height"),
-}
-
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = dataset_root
 
-DATA_PATHS = {key: os.path.join(DATASET_ROOT, val) for key, val in DATA_FOLDERS.items()}
+DATA_PATHS = {label: os.path.join(DATASET_ROOT, label) for label in DATA_LABELS}
 
 
 def download_datasets():
