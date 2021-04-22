@@ -82,8 +82,8 @@ def create_data_generators(shuffle=True, novelty_type='normal', item_to_include=
         As above, for test set
     """
 
-    total_noi_i = 10  # Number of processed images from one environemnt i
-    noe = 1  # Numer of environments
+    total_noi_i = 499 # Number of processed images from one environemnt i (max. 499)
+    noe = 9  # Numer of environments (max. 9 )
     n_p = 32  # Patch size, patch --> n_p x n_p
 
     novelty = novelty_type
