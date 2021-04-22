@@ -1,6 +1,6 @@
-# Novel Data
+# Dataset
 
-Folders with novel data, divided up by novelty generation technique.
+Folders with data, divided up by generation technique.
 
 At the moment we distinguish between three types of novelties:
 
@@ -20,18 +20,14 @@ At the moment we distinguish between three types of novelties:
   TO-DO: Use https://github.com/StephenGss/PAL/tree/master/run/resourcepacks to 
   alter textures. 
 
-### novelty_x folder structure
+### Folder Structure
 
-Each novelty_x folder contains 
+Each folder contains 
 
-1. Screen images (screen_image_i.png) with standard resolution 256 pixel x 256 pixel  
-  of the novelty in the game environment.
-
-2. A json file (novelty_description.json) with a categorization of the novelty and corresponding
-  information about item name / position / texture details. 
+1. Screen images (screen_image_i.png) with standard resolution 256 pixel x 256 pixel of the novelty in the game environment.
   
-3. A json file (env_state.json) with a general description of the game environment , f. e. it states which items
-  are present in the environment and where they are positioned. 
+2. A JSON file (env_state.json) with a general description of the game environment , f. e. it states which items are present in the environment and where they are positioned. 
   
-4. A csv file  (env_state_detailed.csv) with detailed description of the game and its enviroment, f. e. information 
-  about the player, a binary respresentation of the game map, ... 
+3. A csv file  (env_state_detailed.csv) with detailed description of the game and its enviroment, f. e. information about the player, a binary respresentation of the game map, ... 
+
+Each folder besides normal also contains a JSON file (novelty_description.json) with a categorization of the novelty and corresponding information about item name / position / texture details. 
