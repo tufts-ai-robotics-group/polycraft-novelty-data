@@ -23,6 +23,7 @@ def download_datasets():
 
 
 def polycraft_data(batch_size=32, include_classes=None, shuffle=True, all_patches=False):
+    download_datasets()
     dataset = ImageFolder(
         data_const.DATASET_ROOT,
         transform=transforms.TestPreprocess() if all_patches else transforms.TrainPreprocess(),
