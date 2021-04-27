@@ -28,9 +28,12 @@ def polycraft_data(batch_size=32, include_classes=None, shuffle=True, all_patche
         data_const.DATASET_ROOT,
         transform=transforms.TestPreprocess() if all_patches else transforms.TrainPreprocess(),
     )
-    # override batch_size if using patches
+    # if using patches, override batch dim to hold the set of patches
     if all_patches:
-        batch_size = 1
+        batch_size = None
+        collate_fn = transforms.collate_patches
+    else:
+        collate_fn = None
     # split into datasets
     split_len = len(dataset) // 10
     train_set, valid_set, test_set = data.random_split(
@@ -39,6 +42,6 @@ def polycraft_data(batch_size=32, include_classes=None, shuffle=True, all_patche
         generator=torch.Generator().manual_seed(42),
     )
     # get DataLoaders for datasets
-    return (data.DataLoader(train_set, batch_size, shuffle),
-            data.DataLoader(valid_set, batch_size, shuffle),
-            data.DataLoader(test_set, batch_size, shuffle))
+    return (data.DataLoader(train_set, batch_size, shuffle, collate_fn=collate_fn),
+            data.DataLoader(valid_set, batch_size, shuffle, collate_fn=collate_fn),
+            data.DataLoader(test_set, batch_size, shuffle, collate_fn=collate_fn))

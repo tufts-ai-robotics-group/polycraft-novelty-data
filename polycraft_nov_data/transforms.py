@@ -91,3 +91,18 @@ class TestPreprocess:
 
     def __call__(self, tensor):
         return self.preprocess(tensor)
+
+
+def collate_patches(dataset_entry):
+    """Reshape patches produced by ToPatches for DataLoader
+
+    Args:
+        dataset_entry (tuple): Tuple containing image tensor produced by ToPatches and target int
+
+    Returns:
+        tuple: Tuple containing set of patches with shape (B, C, H, W), where B = PH * PW,
+               and target int
+    """
+    data, target = dataset_entry
+    shape = data.shape
+    return (torch.reshape(data, (-1,) + shape[2:]), target)
