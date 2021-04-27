@@ -11,6 +11,8 @@ import polycraft_nov_data.transforms as transforms
 
 
 def download_datasets():
+    """Download Polycraft datasets if not downloaded
+    """
     for label, data_path in data_const.DATA_PATHS.items():
         zip_path = os.path.join(data_path, label + ".zip")
         # assume data is downloaded if env_0 folder exists
@@ -22,18 +24,35 @@ def download_datasets():
             os.remove(zip_path)
 
 
-def polycraft_data(batch_size=32, include_classes=None, shuffle=True, all_patches=False):
-    download_datasets()
-    dataset = ImageFolder(
-        data_const.DATASET_ROOT,
-        transform=transforms.TestPreprocess() if all_patches else transforms.TrainPreprocess(),
-    )
+def polycraft_data(batch_size=32, include_classes=None, image_scale=1.0, shuffle=True,
+                   all_patches=False):
+    """torch DataLoaders for Polycraft datasets
+
+    Args:
+        batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
+        include_classes (list, optional): List of classes to include.
+                                          Defaults to None, including all classes.
+        image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
+        shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
+        all_patches (bool, optional): Whether to replace batches with all patches from an image.
+                                      Defaults to False.
+
+    Returns:
+        (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
+                                              Contains batches of (3, 32, 32) images,
+                                              with values 0-1.
+    """
     # if using patches, override batch dim to hold the set of patches
-    if all_patches:
+    if not all_patches:
+        collate_fn = None
+        transform = transforms.TrainPreprocess(image_scale)
+    else:
         batch_size = None
         collate_fn = transforms.collate_patches
-    else:
-        collate_fn = None
+        transform = transforms.TestPreprocess(image_scale)
+    # get the dataset
+    download_datasets()
+    dataset = ImageFolder(data_const.DATASET_ROOT, transform=transform)
     # split into datasets
     split_len = len(dataset) // 10
     train_set, valid_set, test_set = data.random_split(

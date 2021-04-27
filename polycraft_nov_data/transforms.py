@@ -59,8 +59,8 @@ class TrainPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         _, h, w = data_const.IMAGE_SHAPE
-        resize_h = int(h * .5)
-        resize_w = int(w * .5)
+        resize_h = int(h * image_scale)
+        resize_w = int(w * image_scale)
         self.preprocess = transforms.Compose([
             transforms.Resize((resize_h, resize_w)),
             CropUI(),
@@ -80,8 +80,8 @@ class TestPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         _, h, w = data_const.IMAGE_SHAPE
-        resize_h = int(h * .5)
-        resize_w = int(w * .5)
+        resize_h = int(h * image_scale)
+        resize_w = int(w * image_scale)
         self.preprocess = transforms.Compose([
             transforms.Resize((resize_h, resize_w)),
             CropUI(),
