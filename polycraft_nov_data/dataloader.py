@@ -6,7 +6,8 @@ from torch.utils import data
 from torchvision.datasets import ImageFolder
 
 import polycraft_nov_data.data_const as data_const
-import polycraft_nov_data.transforms as transforms
+import polycraft_nov_data.dataset_transforms as dataset_transforms
+import polycraft_nov_data.image_transforms as image_transforms
 
 
 def download_datasets():
@@ -23,8 +24,8 @@ def download_datasets():
             os.remove(zip_path)
 
 
-def polycraft_data(batch_size=32, include_classes=None, image_scale=1.0, shuffle=True,
-                   all_patches=False):
+def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, shuffle=True,
+                          all_patches=False):
     """torch DataLoaders for Polycraft datasets
 
     Args:
@@ -44,16 +45,16 @@ def polycraft_data(batch_size=32, include_classes=None, image_scale=1.0, shuffle
     # if using patches, override batch dim to hold the set of patches
     if not all_patches:
         collate_fn = None
-        transform = transforms.TrainPreprocess(image_scale)
+        transform = image_transforms.TrainPreprocess(image_scale)
     else:
         batch_size = None
-        collate_fn = transforms.collate_patches
-        transform = transforms.TestPreprocess(image_scale)
+        collate_fn = dataset_transforms.collate_patches
+        transform = image_transforms.TestPreprocess(image_scale)
     # get the dataset
     download_datasets()
     dataset = ImageFolder(data_const.DATASET_ROOT, transform=transform)
     # split into datasets
-    train_set, valid_set, test_set = transforms.filter_split(
+    train_set, valid_set, test_set = dataset_transforms.filter_split(
         dataset, [.8, .2, .2], include_classes
     )
     # get DataLoaders for datasets

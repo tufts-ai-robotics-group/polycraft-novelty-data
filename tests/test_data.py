@@ -1,7 +1,7 @@
-from polycraft_nov_data.data import polycraft_data
+from polycraft_nov_data.dataloader import polycraft_dataloaders
 
 
-train_loader, valid_loader, test_loader = polycraft_data(batch_size=1, shuffle=False)
+train_loader, valid_loader, test_loader = polycraft_dataloaders(batch_size=1, shuffle=False)
 
 
 def test_polycraft_len():
