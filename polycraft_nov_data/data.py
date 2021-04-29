@@ -2,7 +2,6 @@ import os
 import urllib.request
 import zipfile
 
-import torch
 from torch.utils import data
 from torchvision.datasets import ImageFolder
 
@@ -54,11 +53,8 @@ def polycraft_data(batch_size=32, include_classes=None, image_scale=1.0, shuffle
     download_datasets()
     dataset = ImageFolder(data_const.DATASET_ROOT, transform=transform)
     # split into datasets
-    split_len = len(dataset) // 10
-    train_set, valid_set, test_set = data.random_split(
-        dataset,
-        [len(dataset) - 2 * split_len, split_len, split_len],
-        generator=torch.Generator().manual_seed(42),
+    train_set, valid_set, test_set = transforms.filter_split(
+        dataset, [.8, .2, .2], include_classes
     )
     # get DataLoaders for datasets
     return (data.DataLoader(train_set, batch_size, shuffle, collate_fn=collate_fn),
