@@ -5,6 +5,22 @@ from torchvision.transforms import functional
 import polycraft_nov_data.data_const as data_const
 
 
+class ScaleImage:
+    def __init__(self, image_scale=1.0):
+        """Image scaling by multiplicative factor
+
+        Args:
+            image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
+        """
+        self.image_scale = image_scale
+
+    def __call__(self, tensor):
+        _, h, w = tensor.shape
+        resize_h = int(h * self.image_scale)
+        resize_w = int(w * self.image_scale)
+        return functional.resize(tensor, (resize_h, resize_w))
+
+
 class CropUI:
     def __call__(self, tensor):
         """Crop the UI by removing bottom row of patches
@@ -15,7 +31,7 @@ class CropUI:
         Returns:
             torch.tensor: Cropped image tensor
         """
-        _, h, w = data_const.IMAGE_SHAPE
+        _, h, w = tensor.shape
         _, patch_h, _ = data_const.PATCH_SHAPE
         return functional.crop(tensor, 0, 0, h - patch_h, w)
 
@@ -58,11 +74,8 @@ class TrainPreprocess:
         Args:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
-        _, h, w = data_const.IMAGE_SHAPE
-        resize_h = int(h * image_scale)
-        resize_w = int(w * image_scale)
         self.preprocess = transforms.Compose([
-            transforms.Resize((resize_h, resize_w)),
+            ScaleImage(image_scale),
             CropUI(),
             transforms.ToTensor(),
             SamplePatch(),
@@ -79,11 +92,8 @@ class TestPreprocess:
         Args:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
-        _, h, w = data_const.IMAGE_SHAPE
-        resize_h = int(h * image_scale)
-        resize_w = int(w * image_scale)
         self.preprocess = transforms.Compose([
-            transforms.Resize((resize_h, resize_w)),
+            ScaleImage(image_scale),
             CropUI(),
             transforms.ToTensor(),
             ToPatches(),
