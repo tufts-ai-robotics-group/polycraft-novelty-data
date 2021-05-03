@@ -75,8 +75,8 @@ class TrainPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         self.preprocess = transforms.Compose([
-            ScaleImage(image_scale),
             CropUI(),
+            ScaleImage(image_scale),
             transforms.ToTensor(),
             SamplePatch(),
         ])
@@ -93,8 +93,8 @@ class TestPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         self.preprocess = transforms.Compose([
-            ScaleImage(image_scale),
             CropUI(),
+            ScaleImage(image_scale),
             transforms.ToTensor(),
             ToPatches(),
         ])
