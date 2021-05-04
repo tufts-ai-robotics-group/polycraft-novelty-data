@@ -4,6 +4,21 @@ import torch
 from torch.utils import data
 
 
+def targets_tensor(dataset):
+    """Gets dataset targets as a tensor, handling varying types
+
+    Args:
+        dataset (data.Dataset): Dataset to get targets from
+
+    Returns:
+        torch.tensor: Tensor of the targets
+    """
+    dataset_targets = dataset.targets
+    if type(dataset_targets) is list:
+        dataset_targets = torch.tensor(dataset_targets)
+    return dataset_targets
+
+
 def filter_dataset(dataset, include_classes=None):
     """Filter dataset to include only specified classes
 
@@ -17,7 +32,7 @@ def filter_dataset(dataset, include_classes=None):
     """
     # select only included classes
     if include_classes is not None:
-        dataset_targets = torch.Tensor(dataset.targets)
+        dataset_targets = targets_tensor(dataset)
         data_include = torch.any(torch.stack([dataset_targets == target
                                               for target in include_classes]),
                                  dim=0)
@@ -38,7 +53,7 @@ def filter_split(dataset, split_percents, include_classes=None):
         iterable: Iterable of Datasets with only classes from include_classes
     """
     if include_classes is None:
-        include_classes = torch.unique(torch.Tensor(dataset.targets))
+        include_classes = torch.unique(targets_tensor(dataset))
     target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
     # create list with empty list for each split
     dataset_splits = [[] for _ in range(len(split_percents))]
