@@ -17,3 +17,13 @@ def test_crop_on_resized():
         scale_image = image_transforms.ScaleImage(image_scales[i])
         tensor = scale_image(crop_ui(tensor))
         assert tensor.shape == crop_shapes[i]
+
+
+# GaussianNoise tests
+def test_gaussian_noise():
+    # check bounds of noisy image and that noise is applied
+    image = torch.rand(data_const.IMAGE_SHAPE)
+    noisy_image = image_transforms.GaussianNoise()(image)
+    assert noisy_image.min() >= 0
+    assert noisy_image.max() <= 1
+    assert (noisy_image != image).any()

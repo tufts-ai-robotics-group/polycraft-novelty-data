@@ -75,9 +75,9 @@ class TrainPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         self.preprocess = transforms.Compose([
+            transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            transforms.ToTensor(),
             SamplePatch(),
         ])
 
@@ -93,11 +93,32 @@ class TestPreprocess:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
         self.preprocess = transforms.Compose([
+            transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            transforms.ToTensor(),
             ToPatches(),
         ])
 
     def __call__(self, tensor):
         return self.preprocess(tensor)
+
+
+class GaussianNoise:
+    """Dataset transform to apply Gaussian Noise to normalized data
+    """
+    def __init__(self, std=1/40):
+        """Dataset transform to apply Gaussian Noise to normalized data
+
+        Args:
+            std (float, optional): STD of noise. Defaults to 1/40.
+        """
+        self.std = std
+
+    def __call__(self, tensor):
+        out = tensor + torch.randn_like(tensor) * self.std
+        out[out < 0] = 0
+        out[out > 1] = 1
+        return out
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(std=%f)' % (self.std,)
