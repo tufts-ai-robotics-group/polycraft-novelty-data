@@ -24,6 +24,11 @@ def download_datasets():
             os.remove(zip_path)
 
 
+def polycraft_dataset(transform=None):
+    download_datasets()
+    return ImageFolder(data_const.DATASET_ROOT, transform=transform)
+
+
 def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, shuffle=True,
                           all_patches=False):
     """torch DataLoaders for Polycraft datasets
@@ -51,11 +56,10 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
         collate_fn = dataset_transforms.collate_patches
         transform = image_transforms.TestPreprocess(image_scale)
     # get the dataset
-    download_datasets()
-    dataset = ImageFolder(data_const.DATASET_ROOT, transform=transform)
+    dataset = polycraft_dataset(transform)
     # split into datasets
     train_set, valid_set, test_set = dataset_transforms.filter_split(
-        dataset, [.8, .2, .2], include_classes
+        dataset, [.7, .15, .15], include_classes
     )
     # get DataLoaders for datasets
     return (data.DataLoader(train_set, batch_size, shuffle, collate_fn=collate_fn),

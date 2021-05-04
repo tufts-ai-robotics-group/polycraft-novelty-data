@@ -55,6 +55,10 @@ def filter_split(dataset, split_percents, include_classes=None):
     if include_classes is None:
         include_classes = torch.unique(targets_tensor(dataset))
     target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
+    # raise exception if splits do not sum to 1
+    if sum(split_percents) != 1:
+        raise Exception("Split percents should sum to 1, instead got percents " +
+                        str(split_percents))
     # create list with empty list for each split
     dataset_splits = [[] for _ in range(len(split_percents))]
     for target_dataset in target_datasets:
