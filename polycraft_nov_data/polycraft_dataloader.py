@@ -1,12 +1,17 @@
-import torch
-from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import os
-from skimage import io
-from torchvision.datasets.utils import download_url
+import re
+import torch
 import zipfile
 import json
+import torchvision
+
+from torch.utils.data import Dataset, DataLoader, ConcatDataset
+from skimage import io
+from torchvision.datasets.utils import download_url
 from skimage.transform import rescale
-import re
+import torchvision.transforms as transforms
+
+import polycraft_nov_data.image_transforms as image_transforms
 
 
 minecraft_item_names = [
@@ -47,6 +52,45 @@ def extract_patches(image, p_size):
 
     return patches
 
+def create_random_data_generators(image_scale, batch_size, data_dir):
+    """
+    Preprocess Images
+    * Crop away polycraft bar 
+    * Change image resolution by scale factor image_scale
+    * Extract patches of size batch_size x batch_size randomly
+    and return dataloader.
+       
+    :scale: scale used for decrease in resolution, set to 1 for no original resolution
+    :param batch_size: size of the extracted batch
+    :param data_dir: root directory where the dataset is
+     
+    :return: train, validation and test dataloader
+    """
+
+    trnsfrm = transforms.Compose([
+            transforms.ToTensor(),
+            image_transforms.CropUI(),
+            image_transforms.ScaleImage(image_scale),
+            transforms.RandomCrop([32,32]),
+        ])
+
+    data = torchvision.datasets.ImageFolder(root = data_dir, transform = trnsfrm)
+    
+    total_noi = len(data)
+    train_noi = int(0.7 * total_noi)  # Number of images used for training (70 %)
+    valid_noi = int(0.15 * total_noi)  # Number of images used for validation (15 %)
+    test_noi = total_noi - train_noi - valid_noi  # Number of images used for testing (15 %)
+    
+    train_dataset, valid_dataset, test_dataset = torch.utils.data.random_split(
+        data, [train_noi, valid_noi, test_noi],
+        generator=torch.Generator().manual_seed(42)
+    )
+
+    train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size, shuffle=True)
+
+    return train_loader, valid_loader, test_loader
 
 def create_data_generators(shuffle=True, novelty_type='normal', item_to_include='None',
                            scale_level=1):
