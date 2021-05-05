@@ -7,9 +7,9 @@ import polycraft_nov_data.image_transforms as image_transforms
 def test_crop_on_resized():
     image_scales = [1, .75, .5]
     crop_shapes = [
-        (3, 224, 256),
-        (3, 168, 192),
-        (3, 112, 128),
+        (3, 234, 256),
+        (3, 175, 192),
+        (3, 117, 128),
     ]
     crop_ui = image_transforms.CropUI()
     for i in range(len(image_scales)):

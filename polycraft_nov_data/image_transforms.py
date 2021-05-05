@@ -32,8 +32,8 @@ class CropUI:
             torch.tensor: Cropped image tensor
         """
         _, h, w = tensor.shape
-        _, patch_h, _ = data_const.PATCH_SHAPE
-        return functional.crop(tensor, 0, 0, h - patch_h, w)
+        ui_h = 22
+        return functional.crop(tensor, 0, 0, h - ui_h, w)
 
 
 class SamplePatch:
