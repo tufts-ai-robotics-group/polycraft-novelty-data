@@ -37,6 +37,14 @@ class CropUI:
 
 
 class SamplePatch:
+    def __init__(self, patch_shape):
+        """Sample a random patch from the set produced by ToPatches
+
+        Args:
+            patch_shape (torch.tensor): Shape of patches to output
+        """
+        self.to_patches = ToPatches(patch_shape)
+
     def __call__(self, tensor):
         """Sample a random patch from the set produced by ToPatches
 
@@ -46,12 +54,20 @@ class SamplePatch:
         Returns:
             torch.tensor: Patch image tensor
         """
-        patches = ToPatches()(tensor)
+        patches = self.to_patches(tensor)
         patch_set_h, patch_set_w, _, _, _ = patches.shape
         return patches[torch.randint(patch_set_h, ()), torch.randint(patch_set_w, ())]
 
 
 class ToPatches:
+    def __init__(self, patch_shape):
+        """Divide image into set of patches
+
+        Args:
+            patch_shape (torch.tensor): Shape of patches to output
+        """
+        _, self.patch_h, self.patch_w = patch_shape
+
     def __call__(self, tensor):
         """Divide image into set of patches
 
@@ -62,8 +78,8 @@ class ToPatches:
             torch.tensor: Set of patch image tensors, shape (PH, PW, C, H, W)
                           where PH and PW are number of patches vertically/horizontally
         """
-        _, patch_h, patch_w = data_const.PATCH_SHAPE
-        patches = tensor.unfold(1, patch_h, patch_h//2).unfold(2, patch_w, patch_w//2)
+        patches = tensor.unfold(1, self.patch_h, self.patch_h//2)
+        patches = patches.unfold(2, self.patch_w, self.patch_w//2)
         return patches.permute(1, 2, 0, 3, 4)
 
 
@@ -78,7 +94,7 @@ class TrainPreprocess:
             transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            SamplePatch(),
+            SamplePatch(data_const.PATCH_SHAPE),
         ])
 
     def __call__(self, tensor):
@@ -96,7 +112,7 @@ class TestPreprocess:
             transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            ToPatches(),
+            ToPatches(data_const.PATCH_SHAPE),
         ])
 
     def __call__(self, tensor):
