@@ -1,6 +1,6 @@
 import os
+import shutil
 import urllib.request
-import zipfile
 
 from torch.utils import data
 from torchvision.datasets import ImageFolder
@@ -19,8 +19,7 @@ def download_datasets():
         if not os.path.isdir(os.path.join(data_path, "env_0")):
             # download, extract, and delete zip of the data
             urllib.request.urlretrieve(data_const.DATA_URLS[label], zip_path)
-            with zipfile.ZipFile(zip_path) as zip:
-                zip.extractall(data_path)
+            shutil.unpack_archive(zip_path, data_path)
             os.remove(zip_path)
 
 
