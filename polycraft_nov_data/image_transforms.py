@@ -41,7 +41,7 @@ class SamplePatch:
         """Sample a random patch from the set produced by ToPatches
 
         Args:
-            patch_shape (torch.tensor): Shape of patches to output
+            patch_shape (tuple): Shape of patches to output
         """
         self.to_patches = ToPatches(patch_shape)
 
@@ -64,7 +64,7 @@ class ToPatches:
         """Divide image into set of patches
 
         Args:
-            patch_shape (torch.tensor): Shape of patches to output
+            patch_shape (tuple): Shape of patches to output
         """
         _, self.patch_h, self.patch_w = patch_shape
 
@@ -138,3 +138,18 @@ class GaussianNoise:
 
     def __repr__(self):
         return self.__class__.__name__ + '(std=%f)' % (self.std,)
+
+
+def patch_array_shape(patch_shape, tensor_shape):
+    """Calculate shape of the output of ToPatches
+
+    Args:
+        patch_shape (tuple): Shape of patches to output
+        tensor_shape (tuple): Shape of image tensor to divide into patches
+
+    Returns:
+        tuple: Shape of the output of ToPatches (PH, PW, C, H, W)
+               where PH and PW are number of patches vertically/horizontally
+    """
+    patch_array = ToPatches(patch_shape)(torch.zeros(tensor_shape))
+    return patch_array.shape
