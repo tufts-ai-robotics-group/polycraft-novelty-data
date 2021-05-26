@@ -62,9 +62,10 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
     )
     # get DataLoaders for datasets
     num_workers = 4
+    prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
     dataloader_kwargs = {
         "num_workers": num_workers,
-        "prefetch_factor": batch_size//num_workers,
+        "prefetch_factor": prefetch_factor,
         "persistent_workers": True,
         "batch_size": batch_size,
         "shuffle": shuffle,
