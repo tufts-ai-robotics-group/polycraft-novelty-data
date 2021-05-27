@@ -1,5 +1,4 @@
 import math
-import numpy as np
 
 import torch
 from torch.utils import data
@@ -75,36 +74,6 @@ def filter_split(dataset, split_percents, include_classes=None):
     return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
 
 
-def filter_split_csv_idcs(dataset, split_percents):
-    """Split polycraft dataset according to a pre-shuffled random order of
-    indices, the indices are loaded from the csv file.
-
-    Args:
-        dataset (data.Dataset): Dataset to filter and split
-        split_percents (iterable): Fraction of dataset to use for each split. Sum should be 1.
-        
-    Returns:
-        train-, val-, test_dataset
-    """
-    # csv file contains randomly ordered indices from 1 to 4500 
-    idcs = np.loadtxt('shuffled_idcs.csv', delimiter=',')
-    idcs = idcs.astype(int)
-    
-    train_size = int(split_percents[0] * len(idcs))
-    valid_size = int(split_percents[1] * len(idcs))
-    
-    train_idcs = idcs[0:train_size]
-    valid_idcs = idcs[train_size:(train_size + valid_size)]
-    test_idcs = idcs[(train_size + valid_size):len(idcs)]
-    
-    # Split whole dataset in subsets according to their index
-    train_dataset = torch.utils.data.Subset(dataset, train_idcs)
-    val_dataset = torch.utils.data.Subset(dataset, valid_idcs)
-    test_dataset = torch.utils.data.Subset(dataset, test_idcs)
-    
-    return train_dataset, val_dataset, test_dataset
-    
-    
 def collate_patches(dataset_entry):
     """Reshape patches produced by ToPatches for DataLoader
 
