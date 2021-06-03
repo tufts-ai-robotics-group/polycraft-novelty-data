@@ -34,7 +34,7 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
 
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
-        include_classes (list, optional): List of classes to include.
+        include_classes (list, optional): List of names of classes to include.
                                           Defaults to None, including all classes.
         image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
         shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
@@ -56,6 +56,8 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
         transform = image_transforms.TestPreprocess(image_scale)
     # get the dataset
     dataset = polycraft_dataset(transform)
+    # update include_classes to use indices instead of names
+    include_classes = dataset_transforms.folder_name_to_label(dataset, include_classes)
     # split into datasets
     train_set, valid_set, test_set = dataset_transforms.filter_split(
         dataset, [.7, .15, .15], include_classes

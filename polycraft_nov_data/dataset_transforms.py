@@ -19,6 +19,12 @@ def targets_tensor(dataset):
     return dataset_targets
 
 
+def folder_name_to_label(dataset, include_classes):
+    if include_classes is None:
+        return None
+    return [dataset.class_to_index[c] for c in include_classes]
+
+
 def filter_dataset(dataset, include_classes=None):
     """Filter dataset to include only specified classes
 
