@@ -19,7 +19,16 @@ def targets_tensor(dataset):
     return dataset_targets
 
 
-def folder_name_to_label(dataset, include_classes):
+def folder_name_to_target(dataset, include_classes):
+    """Converts image folder name to dataset target
+
+    Args:
+        dataset (torchvision.datasets.ImageFolder): Dataset with folder names.
+        include_classes (iterable): Iterable of image folder names or None.
+
+    Returns:
+        iterable: Iterable of dataset target or None.
+    """
     if include_classes is None:
         return None
     return [dataset.class_to_idx[c] for c in include_classes]

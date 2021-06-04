@@ -57,7 +57,7 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
     # get the dataset
     dataset = polycraft_dataset(transform)
     # update include_classes to use indices instead of names
-    include_classes = dataset_transforms.folder_name_to_label(dataset, include_classes)
+    include_classes = dataset_transforms.folder_name_to_target(dataset, include_classes)
     # split into datasets
     train_set, valid_set, test_set = dataset_transforms.filter_split(
         dataset, [.7, .15, .15], include_classes
