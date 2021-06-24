@@ -7,7 +7,7 @@ dataset = polycraft_dataset()
 
 def test_polycraft_len():
     # check length of datasets
-    assert len(train_loader) == 5288
-    assert len(valid_loader) == 1132
-    assert len(test_loader) == 1132
+    assert len(train_loader) == 5988
+    assert len(valid_loader) == 1282
+    assert len(test_loader) == 1282
     assert len(dataset) == len(train_loader) + len(valid_loader) + len(test_loader)
