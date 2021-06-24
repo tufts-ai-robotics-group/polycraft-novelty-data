@@ -19,19 +19,17 @@ def targets_tensor(dataset):
     return dataset_targets
 
 
-def folder_name_to_target(dataset, include_classes):
+def folder_name_to_target(dataset, class_dict):
     """Converts image folder name to dataset target
 
     Args:
         dataset (torchvision.datasets.ImageFolder): Dataset with folder names.
-        include_classes (iterable): Iterable of image folder names or None.
+        class_dict (dict): Dict with image folder names as keys.
 
     Returns:
-        iterable: Iterable of dataset target or None.
+        dict: Dict with targets as keys.
     """
-    if include_classes is None:
-        return None
-    return [dataset.class_to_idx[c] for c in include_classes]
+    return {dataset.class_to_idx[key]: val for key, val in class_dict.items()}
 
 
 def filter_dataset(dataset, include_classes=None):
@@ -55,37 +53,44 @@ def filter_dataset(dataset, include_classes=None):
     return dataset
 
 
-def filter_split(dataset, split_percents, include_classes=None):
-    """Split dataset with consistent and even sets per class.
+def filter_split(dataset, class_splits):
+    """Split dataset with different split per class
 
     Args:
         dataset (data.Dataset): Dataset to filter and split
-        split_percents (iterable): Fraction of dataset to use for each split. Sum should be 1.
-        include_classes (iterable, optional): Classes from dataset.targets to include.
-                                              Defaults to None, not filtering any classes.
+        class_splits (dict): Dict mapping class to iterable summing to <= 1
+
+    Raises:
+        Exception: Split percents should sum to <= 1
 
     Returns:
-        iterable: Iterable of Datasets with only classes from include_classes
+        iterable: Iterable of Datasets with desired splits
     """
-    if include_classes is None:
-        include_classes = torch.unique(targets_tensor(dataset))
+    include_classes = list(class_splits.keys())
     target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
-    # raise exception if splits do not sum to 1
-    if sum(split_percents) != 1:
-        raise Exception("Split percents should sum to 1, instead got percents " +
-                        str(split_percents))
     # create list with empty list for each split
-    dataset_splits = [[] for _ in range(len(split_percents))]
-    for target_dataset in target_datasets:
-        # get lengths with the first entry resolving rounding errors
+    dataset_splits = [[] for _ in range(len(class_splits[include_classes[0]]))]
+    for i in range(len(include_classes)):
+        target_dataset = target_datasets[i]
+        split_percents = class_splits[include_classes[i]]
+        # raise exception if splits do not sum to 1
+        if sum(split_percents) > 1:
+            raise Exception("Split percents should sum to <= 1, instead got percents " +
+                            str(split_percents))
+        # get lengths with the first non-zero entry resolving rounding errors
         lengths = [math.floor(len(target_dataset) * percent) for percent in split_percents]
-        lengths[0] += len(target_dataset) - sum(lengths)
+        first_non_zero = 0
+        for j, length in enumerate(lengths):
+            if length > 0:
+                first_non_zero = j
+                break
+        lengths[first_non_zero] += len(target_dataset) - sum(lengths)
         # split each target
         splits = data.random_split(target_dataset, lengths,
                                    generator=torch.Generator().manual_seed(42))
         # put splits with same percentage into a list
-        for i, split in enumerate(splits):
-            dataset_splits[i].append(split)
+        for j, split in enumerate(splits):
+            dataset_splits[j].append(split)
     return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
 
 

@@ -28,18 +28,15 @@ def polycraft_dataset(transform=None):
     return ImageFolder(data_const.DATASET_ROOT, transform=transform)
 
 
-def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, shuffle=True,
-                          all_patches=False):
+def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True):
     """torch DataLoaders for Polycraft datasets
 
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
-        include_classes (list, optional): List of names of classes to include.
-                                          Defaults to None, including all classes.
         image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
+        include_novel (bool, optional): Whether to include novelties in non-train sets.
+                                        Defaults to False.
         shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
-        all_patches (bool, optional): Whether to replace batches with all patches from an image.
-                                      Defaults to False.
 
     Returns:
         (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
@@ -47,21 +44,22 @@ def polycraft_dataloaders(batch_size=32, include_classes=None, image_scale=1.0, 
                                               with values 0-1.
     """
     # if using patches, override batch dim to hold the set of patches
-    if not all_patches:
+    class_splits = {"normal": [.7, .15, .15]}
+    if not include_novel:
         collate_fn = None
         transform = image_transforms.TrainPreprocess(image_scale)
     else:
+        class_splits.update({"height": [0, .5, .5],
+                             "item": [0, .5, .5]})
         batch_size = None
         collate_fn = dataset_transforms.collate_patches
         transform = image_transforms.TestPreprocess(image_scale)
     # get the dataset
     dataset = polycraft_dataset(transform)
-    # update include_classes to use indices instead of names
-    include_classes = dataset_transforms.folder_name_to_target(dataset, include_classes)
+    # update class_splits to use indices instead of names
+    class_splits = dataset_transforms.folder_name_to_target(dataset, class_splits)
     # split into datasets
-    train_set, valid_set, test_set = dataset_transforms.filter_split(
-        dataset, [.7, .15, .15], include_classes
-    )
+    train_set, valid_set, test_set = dataset_transforms.filter_split(dataset, class_splits)
     # get DataLoaders for datasets
     num_workers = 4
     prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
