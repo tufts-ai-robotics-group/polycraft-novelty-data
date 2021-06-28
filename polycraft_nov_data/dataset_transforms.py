@@ -19,8 +19,21 @@ def targets_tensor(dataset):
     return dataset_targets
 
 
-def folder_name_to_target(dataset, class_dict):
-    """Converts image folder name to dataset target
+def folder_name_to_target_list(dataset, class_list):
+    """Converts image folder name as list entry to dataset target
+
+    Args:
+        dataset (torchvision.datasets.ImageFolder): Dataset with folder names.
+        class_list (list): List with image folder names as entries.
+
+    Returns:
+        list: List with targets as entries.
+    """
+    return [dataset.class_to_idx[c] for c in class_list]
+
+
+def folder_name_to_target_key(dataset, class_dict):
+    """Converts image folder name as dict key to dataset target
 
     Args:
         dataset (torchvision.datasets.ImageFolder): Dataset with folder names.

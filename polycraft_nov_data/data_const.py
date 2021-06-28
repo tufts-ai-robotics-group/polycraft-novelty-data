@@ -13,7 +13,10 @@ DATA_URLS = {
     "item": "https://tufts.box.com/shared/static/p3kpy6njrlx6nvg3gh4t1klt5d3sjdp9.zip",
     "height": "https://tufts.box.com/shared/static/3yfjmkm79yq2rl60kbhnq5eey530iqcv.zip",
 }
-
+# class split constants
+NORMAL_CLASSES = DATA_LABELS[0]
+NOVEL_CLASSES = DATA_LABELS[1:]
+# path constants
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = Path(dataset_root)
 DATA_PATHS = {label: DATASET_ROOT / Path(label) for label in DATA_LABELS}
