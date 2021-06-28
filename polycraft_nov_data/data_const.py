@@ -1,5 +1,5 @@
 import importlib.resources
-import os
+from pathlib import Path
 
 
 # constants related to data labels and locations
@@ -15,8 +15,8 @@ DATA_URLS = {
 }
 
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
-    DATASET_ROOT = dataset_root
-DATA_PATHS = {label: os.path.join(DATASET_ROOT, label) for label in DATA_LABELS}
+    DATASET_ROOT = Path(dataset_root)
+DATA_PATHS = {label: DATASET_ROOT / Path(label) for label in DATA_LABELS}
 # constants related to shape of data
 IMAGE_SHAPE = (3, 256, 256)
 PATCH_SHAPE = (3, 32, 32)

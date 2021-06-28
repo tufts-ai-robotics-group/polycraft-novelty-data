@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import shutil
 import urllib.request
 
@@ -14,13 +14,13 @@ def download_datasets():
     """Download Polycraft datasets if not downloaded
     """
     for label, data_path in data_const.DATA_PATHS.items():
-        zip_path = os.path.join(data_path, label + ".zip")
         # assume data is downloaded if env_0 folder exists
-        if not os.path.isdir(os.path.join(data_path, "env_0")):
+        if not (data_path / Path("env_0")).is_dir():
             # download, extract, and delete zip of the data
+            zip_path = data_path / Path(label + ".zip")
             urllib.request.urlretrieve(data_const.DATA_URLS[label], zip_path)
             shutil.unpack_archive(zip_path, data_path)
-            os.remove(zip_path)
+            zip_path.unlink()
 
 
 def polycraft_dataset(transform=None):
