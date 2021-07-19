@@ -115,8 +115,8 @@ def collate_patches(dataset_entry):
 
     Returns:
         tuple: Tuple containing set of patches with shape (B, C, H, W), where B = PH * PW,
-               and target int
+               and target int as a tensor
     """
     data, target = dataset_entry
     shape = data.shape
-    return (torch.reshape(data, (-1,) + shape[2:]), target)
+    return (torch.reshape(data, (-1,) + shape[2:]), torch.tensor(target))
