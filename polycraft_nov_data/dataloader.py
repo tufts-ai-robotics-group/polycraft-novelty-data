@@ -4,6 +4,7 @@ import urllib.request
 import csv
 
 from torch.utils import data
+from torch.utils.data import Dataset
 from torchvision.datasets import ImageFolder
 
 import polycraft_nov_data.data_const as data_const
