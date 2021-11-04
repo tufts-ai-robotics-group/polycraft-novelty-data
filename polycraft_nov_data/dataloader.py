@@ -13,6 +13,8 @@ import polycraft_nov_data.image_transforms as image_transforms
 
 
 class TrippleDataset(Dataset):
+    """Combine three datasets (we have one for each scale)
+    """
     def __init__(self, datasetA, datasetB, datasetC):
         self.datasetA = datasetA
         self.datasetB = datasetB
@@ -23,6 +25,27 @@ class TrippleDataset(Dataset):
         xB = self.datasetB[index]
         xC = self.datasetC[index]
         return xA, xB, xC
+    
+    def __len__(self):
+        return len(self.datasetA)
+    
+    
+class QuattroDataset(Dataset):
+    """Combine four datasets (we have one for scale 0.5 and scale 0.75 and two
+       for scale 1 (32x32 patch and 16x16 patch)
+    """
+    def __init__(self, datasetA, datasetB, datasetC, datasetD):
+        self.datasetA = datasetA
+        self.datasetB = datasetB
+        self.datasetC = datasetC
+        self.datasetD = datasetD
+        
+    def __getitem__(self, index):
+        xA = self.datasetA[index]
+        xB = self.datasetB[index]
+        xC = self.datasetC[index]
+        xD = self.datasetD[index]
+        return xA, xB, xC, xD
     
     def __len__(self):
         return len(self.datasetA)
