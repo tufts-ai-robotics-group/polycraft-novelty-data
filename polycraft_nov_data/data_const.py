@@ -5,13 +5,11 @@ from pathlib import Path
 # constants related to data labels and locations
 DATA_LABELS = [
     "normal",
-    "item",
-    "height",
+    "fence_hard",
 ]
 DATA_URLS = {
-    "normal": "https://tufts.box.com/shared/static/7jrtn4tssu9palz3x13b6fq9jkleejbk.zip",
-    "item": "https://tufts.box.com/shared/static/p3kpy6njrlx6nvg3gh4t1klt5d3sjdp9.zip",
-    "height": "https://tufts.box.com/shared/static/3yfjmkm79yq2rl60kbhnq5eey530iqcv.zip",
+    "normal": "https://tufts.box.com/shared/static/9okzlpf6eye03d4ycwhvvpovbjfd7x7z.zip",
+    "fence_hard": "https://tufts.box.com/shared/static/zly2idcic2t3oc24kaslqzk7asz4gdot.zip",
 }
 # class split constants
 NORMAL_CLASSES = DATA_LABELS[:1]

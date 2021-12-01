@@ -52,8 +52,8 @@ def download_datasets():
     """Download Polycraft datasets if not downloaded
     """
     for label, data_path in data_const.DATA_PATHS.items():
-        # assume data is downloaded if env_0 folder exists
-        if not (data_path / Path("env_0")).is_dir():
+        # assume data is downloaded if folder contains files or dirs
+        if not any(data_path.iterdir()):
             # download, extract, and delete zip of the data
             zip_path = data_path / Path(label + ".zip")
             urllib.request.urlretrieve(data_const.DATA_URLS[label], zip_path)
@@ -82,13 +82,12 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
                                               with values 0-1.
     """
     # if using patches, override batch dim to hold the set of patches
-    class_splits = {"normal": [.7, .15, .15]}
+    class_splits = {c: [.7, .15, .15] for c in data_const.NORMAL_CLASSES}
     if not include_novel:
         collate_fn = None
         transform = image_transforms.TrainPreprocess(image_scale)
     else:
-        class_splits.update({"height": [0, .5, .5],
-                             "item": [0, .5, .5]})
+        class_splits.update({c: [0, .5, .5] for c in data_const.NOVEL_CLASSES})
         batch_size = None
         collate_fn = dataset_transforms.collate_patches
         transform = image_transforms.TestPreprocess(image_scale)

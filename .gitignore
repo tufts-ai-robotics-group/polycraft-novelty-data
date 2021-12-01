@@ -134,4 +134,4 @@ dmypy.json
 reqlib-metadata
 
 # ignore downloaded copies of datasets
-polycraft_nov_data/dataset/**/env_*
+polycraft_nov_data/dataset/*/*
