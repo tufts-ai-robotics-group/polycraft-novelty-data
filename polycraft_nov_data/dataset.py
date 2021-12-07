@@ -1,0 +1,94 @@
+from pathlib import Path
+import shutil
+import urllib.request
+
+import pandas as pd
+import numpy as np
+from torch.utils.data import Dataset
+from torchvision.datasets import ImageFolder
+
+import polycraft_nov_data.data_const as data_const
+
+
+class TrippleDataset(Dataset):
+    """Combine three datasets (we have one for each scale)
+    """
+    def __init__(self, dataset1, dataset2, dataset3):
+        self.dataset1 = dataset1
+        self.dataset2 = dataset2
+        self.dataset3 = dataset3
+
+    def __getitem__(self, index):
+        return self.dataset1[index], self.dataset2[index], self.dataset3[index]
+
+    def __len__(self):
+        return len(self.dataset1)
+
+
+class QuattroDataset(Dataset):
+    """Combine four datasets (we have one for scale 0.5 and scale 0.75 and two
+       for scale 1 (32x32 patch and 16x16 patch)
+    """
+    def __init__(self, dataset1, dataset2, dataset3, dataset4):
+        self.dataset1 = dataset1
+        self.dataset2 = dataset2
+        self.dataset3 = dataset3
+        self.dataset4 = dataset4
+
+    def __getitem__(self, index):
+        return (
+            self.dataset1[index],
+            self.dataset2[index],
+            self.dataset3[index],
+            self.dataset4[index]
+        )
+
+    def __len__(self):
+        return len(self.dataset1)
+
+
+def download_datasets():
+    """Download Polycraft datasets if not downloaded
+    """
+    for label, data_path in data_const.DATA_PATHS.items():
+        # assume data is downloaded if folder contains files or dirs
+        if not any(data_path.iterdir()):
+            # download, extract, and delete zip of the data
+            zip_path = data_path / Path(label + ".zip")
+            urllib.request.urlretrieve(data_const.DATA_URLS[label], zip_path)
+            shutil.unpack_archive(zip_path, data_path)
+            zip_path.unlink()
+
+
+class PolycraftDataset(ImageFolder):
+    def __init__(self, transform=None):
+        download_datasets()
+        super().__init__(data_const.DATASET_ROOT, transform=transform)
+
+    @staticmethod
+    def make_dataset(directory, class_to_idx, extensions=None, is_valid_file=None):
+        instances = ImageFolder.make_dataset(directory, class_to_idx, extensions, is_valid_file)
+        # load target CSV
+        target_df = pd.read_csv(data_const.DATASET_TARGETS)
+        ids = target_df["id"].to_numpy()
+        novel_percents = target_df["novel_percent"].to_numpy()
+        nov_thresh = .1
+        # apply correction to novel labels
+        for i, instance in enumerate(instances):
+            raw_path, raw_target = instance
+            path = Path(raw_path)
+            novel_target = class_to_idx[path.parts[-3]]
+            cur_id = "/".join(path.parts[-3:-1] + (path.stem,))
+            if raw_target != class_to_idx["normal"]:
+                index = np.argwhere(ids == cur_id)
+                if index.shape[0] != 1:
+                    print("Warning found %i targets for image: %s" % (index.shape[0], cur_id))
+                else:
+                    target = novel_target if novel_percents[index] >= nov_thresh \
+                        else class_to_idx["normal"]
+                    instances[i] = (raw_path, target)
+        return instances
+
+
+def polycraft_dataset(transform=None):
+    return PolycraftDataset(transform=transform)

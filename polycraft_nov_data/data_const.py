@@ -17,6 +17,7 @@ NOVEL_CLASSES = DATA_LABELS[1:]
 # path constants
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = Path(dataset_root)
+DATASET_TARGETS = DATASET_ROOT / Path("targets.csv")
 DATA_PATHS = {label: DATASET_ROOT / Path(label) for label in DATA_LABELS}
 # constants related to shape of data
 IMAGE_SHAPE = (3, 256, 256)
