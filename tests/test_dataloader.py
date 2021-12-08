@@ -11,6 +11,6 @@ def test_polycraft_len():
         batch_size=1, include_novel=True, shuffle=False)
     dataset = polycraft_dataset()
     assert len(train_loader) == 24354
-    assert len(valid_loader) == 16528
-    assert len(test_loader) == 16528
+    assert len(valid_loader) == 11117
+    assert len(test_loader) == 11117
     assert len(dataset) == len(train_loader) + len(valid_loader) + len(test_loader)

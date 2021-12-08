@@ -51,6 +51,8 @@ def download_datasets():
     """Download Polycraft datasets if not downloaded
     """
     for label, data_path in data_const.DATA_PATHS.items():
+        # make the directory if it doesn't exist
+        data_path.mkdir(exist_ok=True)
         # assume data is downloaded if folder contains files or dirs
         if not any(data_path.iterdir()):
             # download, extract, and delete zip of the data
