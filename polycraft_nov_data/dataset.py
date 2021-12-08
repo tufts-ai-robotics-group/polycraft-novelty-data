@@ -72,7 +72,8 @@ class PolycraftDataset(ImageFolder):
         target_df = pd.read_csv(data_const.DATASET_TARGETS)
         ids = target_df["id"].to_numpy()
         novel_percents = target_df["novel_percent"].to_numpy()
-        nov_thresh = .1
+        nov_thresh = .01
+        reject_indices = []
         # apply correction to novel labels
         for i, instance in enumerate(instances):
             raw_path, raw_target = instance
@@ -84,9 +85,14 @@ class PolycraftDataset(ImageFolder):
                 if index.shape[0] != 1:
                     print("Warning found %i targets for image: %s" % (index.shape[0], cur_id))
                 else:
-                    target = novel_target if novel_percents[index] >= nov_thresh \
-                        else class_to_idx["normal"]
-                    instances[i] = (raw_path, target)
+                    if novel_percents[index] >= nov_thresh:
+                        target = novel_target
+                        instances[i] = (raw_path, target)
+                    else:
+                        reject_indices.append(i)
+        # remove images with ambiguous labels, starting at end for consistent indexing
+        for i in reversed(reject_indices):
+            del instances[i]
         return instances
 
 
