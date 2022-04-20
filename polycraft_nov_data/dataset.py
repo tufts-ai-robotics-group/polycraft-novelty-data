@@ -71,7 +71,6 @@ class PolycraftDataset(ImageFolder):
         target_df = pd.read_csv(data_const.DATASET_TARGETS)
         ids = target_df["id"].to_numpy()
         novel_percents = target_df["novel_percent"].to_numpy()
-        nov_thresh = .01
         reject_indices = []
         # apply correction to novel labels
         for i, instance in enumerate(instances):
@@ -84,7 +83,7 @@ class PolycraftDataset(ImageFolder):
                 if index.shape[0] != 1:
                     print("Warning found %i targets for image: %s" % (index.shape[0], cur_id))
                 else:
-                    if novel_percents[index] >= nov_thresh:
+                    if novel_percents[index] >= data_const.NOV_THRESH:
                         target = novel_target
                         instances[i] = (raw_path, target)
                     else:
