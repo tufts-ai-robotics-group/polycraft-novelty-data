@@ -153,3 +153,16 @@ def patch_array_shape(patch_shape, tensor_shape):
     """
     patch_array = ToPatches(patch_shape)(torch.zeros(tensor_shape))
     return patch_array.shape
+
+
+class VGGPreprocess:
+    """Preprocessing for VGG models
+    """
+    def __init__(self) -> None:
+        self.preprocess = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+    def __call__(self, tensor):
+        return self.preprocess(tensor)
