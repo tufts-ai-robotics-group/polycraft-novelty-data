@@ -84,8 +84,7 @@ class PolycraftDataset(ImageFolder):
                     print("Warning found %i targets for image: %s" % (index.shape[0], cur_id))
                 else:
                     if novel_percents[index] >= data_const.NOV_THRESH:
-                        target = novel_target
-                        instances[i] = (raw_path, target)
+                        instances[i] = (raw_path, novel_target)
                     else:
                         reject_indices.append(i)
         # remove images with ambiguous labels, starting at end for consistent indexing
