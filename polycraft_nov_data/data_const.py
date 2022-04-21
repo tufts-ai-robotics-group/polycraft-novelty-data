@@ -20,7 +20,14 @@ NORMAL_CLASSES = [
     "item_sand",
     "item_coal_block",
 ]
-NOVEL_CLASSES = [
+NOVEL_VALID_CLASSES = [
+    "item_quartz_block",
+    "item_obsidian",
+    "item_prismarine",
+    "item_tnt",
+    "item_sea_lantern",
+]
+NOVEL_TEST_CLASSES = [
     "tree_easy",
     "item_bookshelf",
     "item_deadbush",
@@ -34,11 +41,6 @@ NOVEL_CLASSES = [
     "item_stonebrick",
     "item_cake",
     "item_noteblock",
-    "item_quartz_block",
-    "item_obsidian",
-    "item_prismarine",
-    "item_tnt",
-    "item_sea_lantern",
     "item_wheat",
     "item_mycelium",
     "item_waterlily",

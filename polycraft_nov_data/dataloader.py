@@ -22,12 +22,13 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
                                               with values 0-1.
     """
     # if using patches, override batch dim to hold the set of patches
-    class_splits = {c: [.7, .15, .15] for c in data_const.NORMAL_CLASSES}
+    class_splits = {c: [.8, .1, .1] for c in data_const.NORMAL_CLASSES}
     if not include_novel:
         collate_fn = None
         transform = image_transforms.TrainPreprocess(image_scale)
     else:
-        class_splits.update({c: [0, .5, .5] for c in data_const.NOVEL_CLASSES})
+        class_splits.update({c: [0, 1, 0] for c in data_const.NOVEL_VALID_CLASSES})
+        class_splits.update({c: [0, 0, 1] for c in data_const.NOVEL_TEST_CLASSES})
         batch_size = None
         collate_fn = dataset_transforms.collate_patches
         transform = image_transforms.TestPreprocess(image_scale)
@@ -36,7 +37,7 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
     # update class_splits to use indices instead of names
     class_splits = dataset_transforms.folder_name_to_target_key(dataset, class_splits)
     # split into datasets
-    train_set, valid_set, test_set = dataset_transforms.filter_split(dataset, class_splits)
+    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, class_splits)
     # get DataLoaders for datasets
     num_workers = 4
     prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
@@ -82,6 +83,6 @@ def polycraft_dataset_for_ms(batch_size=32, image_scale=1.0, patch_shape=(3, 32,
     # update class_splits to use indices instead of names
     class_splits = dataset_transforms.folder_name_to_target_key(dataset, class_splits)
     # split into datasets
-    train_set, valid_set, test_set = dataset_transforms.filter_split(dataset, class_splits)
+    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, class_splits)
     # get DataLoaders for datasets
     return (train_set, valid_set, test_set)

@@ -1,4 +1,5 @@
 import math
+from pathlib import Path
 
 import torch
 from torch.utils import data
@@ -66,6 +67,15 @@ def filter_dataset(dataset, include_classes=None):
     return dataset
 
 
+def ep_split(dataset):
+    episode_labels = torch.Tensor(
+        [int(Path(dataset.dataset.imgs[idx][0]).parent.stem) for idx in dataset.indices])
+    splits = []
+    for label in torch.unique(episode_labels):
+        splits += [data.Subset(dataset, torch.nonzero(episode_labels == label)[:, 0])]
+    return splits
+
+
 def filter_split(dataset, class_splits):
     """Split dataset with different split per class
 
@@ -104,6 +114,48 @@ def filter_split(dataset, class_splits):
         # put splits with same percentage into a list
         for j, split in enumerate(splits):
             dataset_splits[j].append(split)
+    return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
+
+
+def filter_ep_split(dataset, class_splits):
+    """Split dataset by episodes with different split per class
+
+    Args:
+        dataset (data.Dataset): Dataset to filter and split
+        class_splits (dict): Dict mapping class to iterable summing to <= 1
+
+    Raises:
+        Exception: Split percents should sum to <= 1
+
+    Returns:
+        iterable: Iterable of Datasets with desired splits
+    """
+    include_classes = list(class_splits.keys())
+    target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
+    # create list with empty list for each split
+    dataset_splits = [[] for _ in range(len(class_splits[include_classes[0]]))]
+    for i in range(len(include_classes)):
+        target_dataset = target_datasets[i]
+        split_percents = class_splits[include_classes[i]]
+        target_dataset_by_ep = ep_split(target_dataset)
+        # raise exception if splits do not sum to 1
+        if sum(split_percents) > 1:
+            raise Exception("Split percents should sum to <= 1, instead got percents " +
+                            str(split_percents))
+        # get lengths with the first non-zero entry resolving rounding errors
+        lengths = [math.ceil(len(target_dataset_by_ep) * percent) for percent in split_percents]
+        first_non_zero = 0
+        for j, length in enumerate(lengths):
+            if length > 0:
+                first_non_zero = j
+                break
+        lengths[first_non_zero] -= sum(lengths) - len(target_dataset_by_ep)
+        # put episodes into correct splits
+        start_ind = 0
+        for j, length in enumerate(lengths):
+            for k in range(length):
+                dataset_splits[j].append(target_dataset_by_ep[start_ind + k])
+            start_ind += length
     return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
 
 
