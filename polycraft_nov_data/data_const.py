@@ -16,7 +16,7 @@ NOV_THRESH = .01
 NORMAL_CLASSES = [
     "normal",
     "fence",
-    "item_bedrock",
+    "item_anvil",
     "item_sand",
     "item_coal_block",
 ]
@@ -35,7 +35,6 @@ NOVEL_TEST_CLASSES = [
     "item_netherrack",
     "item_enchanting_table",
     "item_jukebox",
-    "item_anvil",
     "item_snow",
     "item_lapis_block",
     "item_stonebrick",
