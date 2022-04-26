@@ -8,14 +8,12 @@ import polycraft_nov_data.image_transforms as image_transforms
 
 def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True):
     """torch DataLoaders for Polycraft datasets
-
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
         image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
         include_novel (bool, optional): Whether to include novelties in non-train sets.
                                         Defaults to False.
         shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
-
     Returns:
         (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
                                               Contains batches of (3, 32, 32) images,
@@ -53,18 +51,50 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
             data.DataLoader(valid_set, **dataloader_kwargs),
             data.DataLoader(test_set, **dataloader_kwargs))
 
-
-def polycraft_dataset_for_ms(batch_size=32, image_scale=1.0, patch_shape=(3, 32, 32),
-                             include_novel=False, shuffle=True):
+def polycraft_dataloaders_full_image(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True):
     """torch DataLoaders for Polycraft datasets
-
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
         image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
         include_novel (bool, optional): Whether to include novelties in non-train sets.
                                         Defaults to False.
         shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
+    Returns:
+        (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
+                                              Contains batches of (image_scale * height) 
+                                              x (image_scale * width) images,
+                                              with values normalized according to vgg16
+                                              pre-training.
+    """
+    # if using patches, override batch dim to hold the set of patches
+    class_splits = {c: [.8, .1, .1] for c in data_const.NORMAL_CLASSES}
+    if not include_novel:
+        transform = image_transforms.TrainPreprocess(image_scale)
+    else:
+        class_splits.update({c: [0, 1, 0] for c in data_const.NOVEL_VALID_CLASSES})
+        class_splits.update({c: [0, 0, 1] for c in data_const.NOVEL_TEST_CLASSES})
+        transform = image_transforms.VGGPreprocess(image_scale)
+    # get the dataset
+    dataset = polycraft_dataset(transform)
+    # update class_splits to use indices instead of names
+    class_splits = dataset_transforms.folder_name_to_target_key(dataset, class_splits)
+    # split into datasets
+    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, class_splits)
+    # get DataLoaders for datasets
+    return (data.DataLoader(train_set, batch_size=batch_size, shuffle=shuffle),
+            data.DataLoader(valid_set, batch_size=batch_size, shuffle=shuffle),
+            data.DataLoader(test_set, batch_size=batch_size, shuffle=shuffle))
 
+
+def polycraft_dataset_for_ms(batch_size=32, image_scale=1.0, patch_shape=(3, 32, 32),
+                             include_novel=False, shuffle=True):
+    """torch DataLoaders for Polycraft datasets
+    Args:
+        batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
+        image_scale (float, optional): Scaling applied to images. Defaults to 1.0.
+        include_novel (bool, optional): Whether to include novelties in non-train sets.
+                                        Defaults to False.
+        shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
     Returns:
         (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
                                               Contains batches of (3, 32, 32) images,
