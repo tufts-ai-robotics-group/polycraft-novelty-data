@@ -66,6 +66,11 @@ class PolycraftDataset(ImageFolder):
 
     @staticmethod
     def make_dataset(directory, class_to_idx, extensions=None, is_valid_file=None):
+        # update class_to_idx for easier classification
+        class_ordering = data_const.NORMAL_CLASSES + data_const.NOVEL_VALID_CLASSES + \
+            data_const.NOVEL_TEST_CLASSES
+        class_to_idx = {c: i for i, c in enumerate(class_ordering)}
+        # make ImageFolder dataset
         instances = ImageFolder.make_dataset(directory, class_to_idx, extensions, is_valid_file)
         # load target CSV
         target_df = pd.read_csv(data_const.DATASET_TARGETS)
