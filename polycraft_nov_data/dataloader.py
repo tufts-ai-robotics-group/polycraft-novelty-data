@@ -1,9 +1,19 @@
+import torch
 from torch.utils import data
 
 import polycraft_nov_data.data_const as data_const
 from polycraft_nov_data.dataset import polycraft_dataset
 import polycraft_nov_data.dataset_transforms as dataset_transforms
 import polycraft_nov_data.image_transforms as image_transforms
+
+
+def balanced_sampler(train_set):
+    # determine class balancing for training
+    train_targets = torch.Tensor([target for _, target in train_set])
+    train_weight = torch.zeros_like(train_targets, dtype=float)
+    for target in torch.unique(train_targets):
+        train_weight[train_targets == target] = 1 / torch.sum(train_targets == target)
+    return data.WeightedRandomSampler(train_weight)
 
 
 def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True):
@@ -47,7 +57,7 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
         "shuffle": shuffle,
         "collate_fn": collate_fn,
     }
-    return (data.DataLoader(train_set, **dataloader_kwargs),
+    return (data.DataLoader(train_set, sampler=balanced_sampler(train_set), **dataloader_kwargs),
             data.DataLoader(valid_set, **dataloader_kwargs),
             data.DataLoader(test_set, **dataloader_kwargs))
 
@@ -90,7 +100,7 @@ def polycraft_dataloaders_full_image(batch_size=32, image_scale=1.0, include_nov
         "batch_size": batch_size,
         "shuffle": shuffle,
     }
-    return (data.DataLoader(train_set, **dataloader_kwargs),
+    return (data.DataLoader(train_set, sampler=balanced_sampler(train_set), **dataloader_kwargs),
             data.DataLoader(valid_set, **dataloader_kwargs),
             data.DataLoader(test_set, **dataloader_kwargs))
 
