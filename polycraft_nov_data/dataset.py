@@ -50,8 +50,8 @@ class QuattroDataset(Dataset):
 def download_datasets():
     """Download Polycraft datasets if not downloaded
     """
-    # assume data is downloaded if folder contains more than the 2 default files
-    if sum(1 for _ in data_const.DATASET_ROOT.iterdir()) <= 2:
+    # assume data is downloaded if folder contains more than the 3 default files
+    if sum(1 for _ in data_const.DATASET_ROOT.iterdir()) <= 3:
         # download, extract, and delete zip of the data
         zip_path = data_const.DATASET_ROOT / Path("polycraft_data.zip")
         urllib.request.urlretrieve(data_const.DATA_URL, zip_path)
