@@ -63,13 +63,18 @@ class PolycraftDataset(ImageFolder):
     def __init__(self, transform=None):
         download_datasets()
         super().__init__(data_const.DATASET_ROOT, transform=transform)
+        self.class_to_idx = PolycraftDataset.correct_class_to_idx()
 
     @staticmethod
-    def make_dataset(directory, class_to_idx, extensions=None, is_valid_file=None):
+    def correct_class_to_idx():
         # update class_to_idx for easier classification
         class_ordering = data_const.NORMAL_CLASSES + data_const.NOVEL_VALID_CLASSES + \
             data_const.NOVEL_TEST_CLASSES
-        class_to_idx = {c: i for i, c in enumerate(class_ordering)}
+        return {c: i for i, c in enumerate(class_ordering)}
+
+    @staticmethod
+    def make_dataset(directory, class_to_idx, extensions=None, is_valid_file=None):
+        class_to_idx = PolycraftDataset.correct_class_to_idx()
         # make ImageFolder dataset
         instances = ImageFolder.make_dataset(directory, class_to_idx, extensions, is_valid_file)
         # load target CSV
