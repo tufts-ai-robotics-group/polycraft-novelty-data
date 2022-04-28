@@ -16,7 +16,8 @@ def balanced_sampler(train_set):
     return data.WeightedRandomSampler(train_weight)
 
 
-def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True):
+def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, shuffle=True,
+                          ret_class_to_idx=False):
     """torch DataLoaders for Polycraft datasets
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
@@ -24,10 +25,12 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
         include_novel (bool, optional): Whether to include novelties in non-train sets.
                                         Defaults to False.
         shuffle (bool, optional): shuffle for DataLoaders. Defaults to True.
+        ret_class_to_idx (bool, optional): Whether to return class_to_idx. Defaults to False.
     Returns:
         (DataLoader, DataLoader, DataLoader): Polycraft train, validation, and test sets.
                                               Contains batches of (3, 32, 32) images,
                                               with values 0-1.
+        dict: class_to_idx if ret_class_to_idx is True.
     """
     # if using patches, override batch dim to hold the set of patches
     class_splits = {c: [.8, .1, .1] for c in data_const.NORMAL_CLASSES}
@@ -57,9 +60,14 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, include_novel=False, s
         "shuffle": shuffle,
         "collate_fn": collate_fn,
     }
-    return (data.DataLoader(train_set, sampler=balanced_sampler(train_set), **dataloader_kwargs),
-            data.DataLoader(valid_set, **dataloader_kwargs),
-            data.DataLoader(test_set, **dataloader_kwargs))
+    dataloaders = (data.DataLoader(train_set, sampler=balanced_sampler(train_set),
+                                   **dataloader_kwargs),
+                   data.DataLoader(valid_set, **dataloader_kwargs),
+                   data.DataLoader(test_set, **dataloader_kwargs))
+    if not ret_class_to_idx:
+        return dataloaders
+    else:
+        return (dataloaders, dataset.class_to_idx)
 
 
 def polycraft_dataloaders_full_image(batch_size=32, image_scale=1.0, include_novel=False,
