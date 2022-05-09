@@ -1,8 +1,11 @@
 import math
 from pathlib import Path
 
+import pandas as pd
 import torch
 from torch.utils import data
+
+import polycraft_nov_data.data_const as data_const
 
 
 def targets_tensor(dataset):
@@ -60,20 +63,22 @@ def filter_dataset(dataset, include_classes=None):
     # select only included classes
     if include_classes is not None:
         dataset_targets = targets_tensor(dataset)
-        data_include = torch.any(torch.stack([dataset_targets == target
-                                              for target in include_classes]),
-                                 dim=0)
+        data_include = torch.any(torch.stack([
+                dataset_targets == dataset.class_to_idx[target] for target in include_classes]),
+            dim=0)
         dataset = data.Subset(dataset, torch.nonzero(data_include)[:, 0])
     return dataset
 
 
 def ep_split(dataset):
     episode_labels = torch.Tensor(
-        [int(Path(dataset.dataset.imgs[idx][0]).parent.stem) for idx in dataset.indices])
+        [int(Path(dataset.dataset.imgs[idx][0]).parent.stem) for idx in dataset.indices]).int()
     splits = []
+    labels = []
     for label in torch.unique(episode_labels):
         splits += [data.Subset(dataset, torch.nonzero(episode_labels == label)[:, 0])]
-    return splits
+        labels += [str(label.item())]
+    return splits, labels
 
 
 def filter_split(dataset, class_splits):
@@ -117,12 +122,13 @@ def filter_split(dataset, class_splits):
     return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
 
 
-def filter_ep_split(dataset, class_splits):
+def filter_ep_split(dataset, include_novel):
     """Split dataset by episodes with different split per class
 
     Args:
         dataset (data.Dataset): Dataset to filter and split
-        class_splits (dict): Dict mapping class to iterable summing to <= 1
+        include_novel (bool, optional): Whether to include novelties in non-train sets.
+                                        Defaults to False.
 
     Raises:
         Exception: Split percents should sum to <= 1
@@ -130,32 +136,33 @@ def filter_ep_split(dataset, class_splits):
     Returns:
         iterable: Iterable of Datasets with desired splits
     """
-    include_classes = list(class_splits.keys())
+    include_classes = data_const.NORMAL_CLASSES
+    if include_novel:
+        include_classes += data_const.NOVEL_VALID_CLASSES + data_const.NOVEL_TEST_CLASSES
     target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
     # create list with empty list for each split
-    dataset_splits = [[] for _ in range(len(class_splits[include_classes[0]]))]
+    dataset_splits = [[], [], []]
+    split_df = pd.read_csv(data_const.DATASET_SPLITS)
     for i in range(len(include_classes)):
         target_dataset = target_datasets[i]
-        split_percents = class_splits[include_classes[i]]
-        target_dataset_by_ep = ep_split(target_dataset)
-        # raise exception if splits do not sum to 1
-        if sum(split_percents) > 1:
-            raise Exception("Split percents should sum to <= 1, instead got percents " +
-                            str(split_percents))
-        # get lengths with the first non-zero entry resolving rounding errors
-        lengths = [math.ceil(len(target_dataset_by_ep) * percent) for percent in split_percents]
-        first_non_zero = 0
-        for j, length in enumerate(lengths):
-            if length > 0:
-                first_non_zero = j
-                break
-        lengths[first_non_zero] -= sum(lengths) - len(target_dataset_by_ep)
-        # put episodes into correct splits
-        start_ind = 0
-        for j, length in enumerate(lengths):
-            for k in range(length):
-                dataset_splits[j].append(target_dataset_by_ep[start_ind + k])
-            start_ind += length
+        if include_classes[i] in data_const.NOVEL_VALID_CLASSES:
+            dataset_splits[1].append(target_dataset)
+            continue
+        elif include_classes[i] in data_const.NOVEL_TEST_CLASSES:
+            dataset_splits[2].append(target_dataset)
+            continue
+        target_dataset_by_ep, ep_labels = ep_split(target_dataset)
+        # put episodes into splits according to CSV
+        for j in range(len(ep_labels)):
+            split_label = split_df[
+                split_df.episode == include_classes[i] + "/" + ep_labels[j]].split
+            split_label = split_label.item()
+            if split_label == "train":
+                dataset_splits[0].append(target_dataset_by_ep[j])
+            elif split_label == "valid":
+                dataset_splits[1].append(target_dataset_by_ep[j])
+            elif split_label == "test":
+                dataset_splits[2].append(target_dataset_by_ep[j])
     return [data.ConcatDataset(dataset_split) for dataset_split in dataset_splits]
 
 

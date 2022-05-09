@@ -1,7 +1,6 @@
 import torch
 from torch.utils import data
 
-import polycraft_nov_data.data_const as data_const
 from polycraft_nov_data.dataset import polycraft_dataset
 import polycraft_nov_data.dataset_transforms as dataset_transforms
 import polycraft_nov_data.image_transforms as image_transforms
@@ -34,10 +33,6 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_n
         dict: class_to_idx if ret_class_to_idx is True.
     """
     # if using patches, override batch dim to hold the set of patches
-    class_splits = {c: [.8, .1, .1] for c in data_const.NORMAL_CLASSES}
-    if include_novel:
-        class_splits.update({c: [0, 1, 0] for c in data_const.NOVEL_VALID_CLASSES})
-        class_splits.update({c: [0, 0, 1] for c in data_const.NOVEL_TEST_CLASSES})
     collate_fn = None
     if not patch:
         transform = image_transforms.VGGPreprocess(image_scale)
@@ -50,10 +45,8 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_n
             transform = image_transforms.TestPreprocess(image_scale)
     # get the dataset
     dataset = polycraft_dataset(transform)
-    # update class_splits to use indices instead of names
-    class_splits = dataset_transforms.folder_name_to_target_key(dataset, class_splits)
     # split into datasets
-    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, class_splits)
+    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, include_novel)
     # get DataLoaders for datasets
     num_workers = 4
     prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)

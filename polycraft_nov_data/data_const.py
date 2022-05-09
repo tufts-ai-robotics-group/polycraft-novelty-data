@@ -7,11 +7,16 @@ DATA_URL = "https://tufts.box.com/shared/static/fq0awbrahmsr97zetqo1v2uz5rjkvon6
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = Path(dataset_root)
 DATASET_TARGETS = DATASET_ROOT / Path("targets.csv")
+DATASET_SPLITS = DATASET_ROOT / Path("splits.csv")
 # constants related to shape of data
 IMAGE_SHAPE = (3, 256, 256)
 PATCH_SHAPE = (3, 32, 32)
 # constant for (inclusive) minimum percentage of image taken up by novel object
 NOV_THRESH = .01
+# constants for data splits (train, valid, test)
+NORMAL_SPLIT = [.8, .1, .1]
+VALID_SPLIT = [0, 1, 0]
+TEST_SPLIT = [0, 0, 1]
 # constants related to classes
 NORMAL_CLASSES = [
     "normal",
