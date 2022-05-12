@@ -136,7 +136,7 @@ def filter_ep_split(dataset, include_novel):
     Returns:
         iterable: Iterable of Datasets with desired splits
     """
-    include_classes = data_const.NORMAL_CLASSES
+    include_classes = data_const.NORMAL_CLASSES.copy()
     if include_novel:
         include_classes += data_const.NOVEL_VALID_CLASSES + data_const.NOVEL_TEST_CLASSES
     target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
