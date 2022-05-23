@@ -4,10 +4,10 @@ import polycraft_nov_data.data_const as data_const
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("polycraft_nov_data/dataset/targets.csv")
+    targets_df = pd.read_csv(data_const.dataset_root / "targets.csv")
     type_to_episodes = {}
     type_to_frames = {}
-    for _, row in df.iterrows():
+    for _, row in targets_df.iterrows():
         raw_path, nov_percent = row
         nov_type, episode, frame = raw_path.split("/")
         if nov_percent >= data_const.NOV_THRESH:

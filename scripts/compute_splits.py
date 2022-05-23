@@ -26,7 +26,7 @@ if __name__ == "__main__":
         target_to_eps[target] = eps_to_count
 
     rng = np.random.default_rng(seed=42)
-    split_df = summary_df = pd.DataFrame(columns=["episode", "split", "num_frames"])
+    split_df = pd.DataFrame(columns=["episode", "split", "num_frames"])
     for target in data_const.NORMAL_CLASSES:
         eps_to_count = target_to_eps[target]
         ep_nums = np.array(list(eps_to_count.keys()))
