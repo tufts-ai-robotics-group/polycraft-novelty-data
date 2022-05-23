@@ -95,7 +95,8 @@ def filter_split(dataset, class_splits):
         iterable: Iterable of Datasets with desired splits
     """
     include_classes = list(class_splits.keys())
-    target_datasets = [filter_dataset(dataset, [target]) for target in include_classes]
+    target_datasets = [
+        filter_dataset(dataset, [dataset.classes[target]]) for target in include_classes]
     # create list with empty list for each split
     dataset_splits = [[] for _ in range(len(class_splits[include_classes[0]]))]
     for i in range(len(include_classes)):
