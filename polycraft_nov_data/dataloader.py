@@ -65,3 +65,24 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_n
         return dataloaders
     else:
         return (dataloaders, dataset.class_to_idx)
+
+
+def polycraft_dataloaders_gcd(transform, batch_size=32, include_novel=False):
+    # get the dataset
+    dataset = polycraft_dataset(transform)
+    # split into datasets
+    train_set, valid_set, test_set = dataset_transforms.filter_ep_split(dataset, include_novel)
+    # combine train with valid so novel data is available
+    gcd_dataset = data.ConcatDataset([train_set, valid_set])
+    # get DataLoaders for datasets
+    num_workers = 4
+    prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
+    dataloader_kwargs = {
+        "num_workers": num_workers,
+        "prefetch_factor": prefetch_factor,
+        "persistent_workers": True,
+        "batch_size": batch_size,
+    }
+    dataloader = data.DataLoader(gcd_dataset, sampler=balanced_sampler(gcd_dataset),
+                                 **dataloader_kwargs)
+    return dataloader
