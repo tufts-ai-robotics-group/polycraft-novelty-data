@@ -67,7 +67,7 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_n
         return (dataloaders, dataset.class_to_idx)
 
 
-def polycraft_dataloaders_gcd(transform, batch_size=32):
+def polycraft_dataloaders_gcd(transform, batch_size=32, eval_mode=False):
     # get the dataset
     dataset = polycraft_dataset(transform)
     # split into datasets
@@ -81,7 +81,11 @@ def polycraft_dataloaders_gcd(transform, batch_size=32):
         "persistent_workers": True,
         "batch_size": batch_size,
     }
-    labeled_loader = data.DataLoader(labeled_set, sampler=balanced_sampler(labeled_set),
-                                     **dataloader_kwargs)
-    unlabeled_loader = data.DataLoader(unlabeled_set, shuffle=True, **dataloader_kwargs)
+    if not eval_mode:
+        labeled_loader = data.DataLoader(labeled_set, sampler=balanced_sampler(labeled_set),
+                                         **dataloader_kwargs)
+        unlabeled_loader = data.DataLoader(unlabeled_set, shuffle=True, **dataloader_kwargs)
+    else:
+        labeled_loader = data.DataLoader(labeled_set, shuffle=False, **dataloader_kwargs)
+        unlabeled_loader = data.DataLoader(unlabeled_set, shuffle=False, **dataloader_kwargs)
     return labeled_loader, unlabeled_loader
