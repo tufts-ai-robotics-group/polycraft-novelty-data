@@ -16,7 +16,7 @@ def balanced_sampler(train_set):
 
 
 def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_novel=False,
-                          shuffle=True, ret_class_to_idx=False):
+                          shuffle=True, ret_class_to_idx=False, quad_full_image=False):
     """torch DataLoaders for Polycraft datasets
     Args:
         batch_size (int, optional): batch_size for DataLoaders. Defaults to 32.
@@ -43,6 +43,9 @@ def polycraft_dataloaders(batch_size=32, image_scale=1.0, patch=False, include_n
             batch_size = None
             collate_fn = dataset_transforms.collate_patches
             transform = image_transforms.TestPreprocess(image_scale)
+    if quad_full_image:
+        transform = image_transforms.PreprocessFullQuadraticImage(image_scale)
+            
     # get the dataset
     dataset = polycraft_dataset(transform)
     # split into datasets
