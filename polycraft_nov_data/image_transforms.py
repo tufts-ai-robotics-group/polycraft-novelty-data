@@ -171,7 +171,7 @@ class CustomPad:
         return F.pad(tensor, padding, mode='replicate')  
     
     
-class TrainPreprocessFullImage:
+class PreprocessFullQuadraticImage:
     def __init__(self, image_scale=1.0):
         """Image preprocessing for AE training with quadratic full (un-patched)
         images.
