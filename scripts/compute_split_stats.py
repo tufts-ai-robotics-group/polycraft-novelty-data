@@ -35,9 +35,9 @@ if __name__ == "__main__":
         valid_stats.frames_filtered += type_to_frames_filtered.get(valid_class, 0)
     test_stats = SplitStats()
     for test_class in data_const.NOVEL_TEST_CLASSES:
-        test_stats.num_ep += len(type_to_episodes.get(valid_class, []))
-        test_stats.frames_raw += type_to_frames_raw.get(valid_class, 0)
-        test_stats.frames_filtered += type_to_frames_filtered.get(valid_class, 0)
+        test_stats.num_ep += len(type_to_episodes.get(test_class, []))
+        test_stats.frames_raw += type_to_frames_raw.get(test_class, 0)
+        test_stats.frames_filtered += type_to_frames_filtered.get(test_class, 0)
     # compute stats for normal data
     splits_df = pd.read_csv(data_const.dataset_root / "splits.csv")
     for _, row in splits_df.iterrows():
