@@ -73,7 +73,7 @@ class ToPatches:
         patches = tensor.unfold(1, self.patch_h, self.patch_h//2)
         patches = patches.unfold(2, self.patch_w, self.patch_w//2)
         return patches.permute(1, 2, 0, 3, 4)
-    
+
 
 class TrainPreprocess:
     def __init__(self, image_scale=1.0):
@@ -112,6 +112,7 @@ class TestPreprocess:
 class GaussianNoise:
     """Dataset transform to apply Gaussian Noise to normalized data
     """
+
     def __init__(self, std=1/40):
         """Dataset transform to apply Gaussian Noise to normalized data
         Args:
@@ -155,11 +156,11 @@ class VGGPreprocess:
 
     def __call__(self, tensor):
         return self.preprocess(tensor)
-    
-    
-class CustomPad:   
+
+
+class CustomPad:
     def __call__(self, tensor):
-        """Pad the previusly cropped UI region by adding replicative pixel 
+        """Pad the previusly cropped UI region by adding replicative pixel
         rows in order to get a quadratic tensor.
         Args:
             tensor (torch.tensor): Image tensor to remove Polycraft UI from
@@ -168,9 +169,9 @@ class CustomPad:
         """
         ui_h = 22
         padding = (0, 0, 0, ui_h)
-        return F.pad(tensor, padding, mode='replicate')  
-    
-    
+        return F.pad(tensor, padding, mode='replicate')
+
+
 class PreprocessFullQuadraticImage:
     def __init__(self, image_scale=1.0):
         """Image preprocessing for AE training with quadratic full (un-patched)
@@ -178,7 +179,7 @@ class PreprocessFullQuadraticImage:
         Args:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
-        
+
         self.preprocess = transforms.Compose([
             transforms.ToTensor(),
             CropUI(),
@@ -188,5 +189,3 @@ class PreprocessFullQuadraticImage:
 
     def __call__(self, tensor):
         return self.preprocess(tensor)
-    
-    
