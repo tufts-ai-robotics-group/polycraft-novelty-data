@@ -1,7 +1,7 @@
 import torch
 from torchvision import transforms
 from torchvision.transforms import functional
-import torch.nn.functional as F
+from torch.nn.functional import pad
 
 import polycraft_nov_data.data_const as data_const
 
@@ -169,7 +169,7 @@ class CustomPad:
         """
         ui_h = 22
         padding = (0, 0, 0, ui_h)
-        return F.pad(tensor, padding, mode='replicate')
+        return pad(tensor, padding, mode='replicate')
 
 
 class PreprocessFullQuadraticImage:
