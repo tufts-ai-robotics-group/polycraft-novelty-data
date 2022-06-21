@@ -1,5 +1,7 @@
 # polycraft-novelty-data
 
+[![polycraft-novelty-data](https://github.com/tufts-ai-robotics-group/polycraft-novelty-data/actions/workflows/main.yml/badge.svg)](https://github.com/tufts-ai-robotics-group/polycraft-novelty-data/actions/workflows/main.yml)
+
 Visual novelty dataset for the Polycraft domain.
 
 ## Installation
