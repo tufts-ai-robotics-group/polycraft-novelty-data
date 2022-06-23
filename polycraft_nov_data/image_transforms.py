@@ -75,9 +75,9 @@ class ToPatches:
         return patches.permute(1, 2, 0, 3, 4)
 
 
-class TrainPreprocess:
+class PatchTrainPreprocess:
     def __init__(self, image_scale=1.0):
-        """Image preprocessing for training
+        """Patch image preprocessing for training
         Args:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """
@@ -92,9 +92,9 @@ class TrainPreprocess:
         return self.preprocess(tensor)
 
 
-class TestPreprocess:
+class PatchTestPreprocess:
     def __init__(self, image_scale=1.0):
-        """Image preprocessing for testing
+        """Patch image preprocessing for testing
         Args:
             image_scale (float, optional): Scaling to apply to image. Defaults to 1.0.
         """

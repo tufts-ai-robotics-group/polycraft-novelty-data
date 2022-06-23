@@ -1,50 +1,14 @@
 from pathlib import Path
 import shutil
+from typing import Callable, Dict, List, Optional, Tuple
 import urllib.request
 
 import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset
-from torchvision.datasets import ImageFolder
+from torchvision.datasets import DatasetFolder
+from torchvision.datasets.folder import default_loader
 
 import polycraft_nov_data.data_const as data_const
-
-
-class TrippleDataset(Dataset):
-    """Combine three datasets (we have one for each scale)
-    """
-    def __init__(self, dataset1, dataset2, dataset3):
-        self.dataset1 = dataset1
-        self.dataset2 = dataset2
-        self.dataset3 = dataset3
-
-    def __getitem__(self, index):
-        return self.dataset1[index], self.dataset2[index], self.dataset3[index]
-
-    def __len__(self):
-        return len(self.dataset1)
-
-
-class QuattroDataset(Dataset):
-    """Combine four datasets (we have one for scale 0.5 and scale 0.75 and two
-       for scale 1 (32x32 patch and 16x16 patch)
-    """
-    def __init__(self, dataset1, dataset2, dataset3, dataset4):
-        self.dataset1 = dataset1
-        self.dataset2 = dataset2
-        self.dataset3 = dataset3
-        self.dataset4 = dataset4
-
-    def __getitem__(self, index):
-        return (
-            self.dataset1[index],
-            self.dataset2[index],
-            self.dataset3[index],
-            self.dataset4[index]
-        )
-
-    def __len__(self):
-        return len(self.dataset1)
 
 
 def download_datasets():
@@ -59,49 +23,74 @@ def download_datasets():
         zip_path.unlink()
 
 
-class PolycraftDataset(ImageFolder):
-    def __init__(self, transform=None):
+class NovelCraft(DatasetFolder):
+    def __init__(self,
+                 split: str,
+                 transform: Optional[Callable] = None,
+                 target_transform: Optional[Callable] = None) -> None:
         download_datasets()
-        super().__init__(data_const.DATASET_ROOT, transform=transform)
-        self.class_to_idx = PolycraftDataset.correct_class_to_idx()
+        # make split specify novel, norm, or both
+        if split not in set(item.value for item in data_const.SplitEnum):
+            raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
+                             "\n".join(set(item.value for item in data_const.SplitEnum)))
+        self.split = split
+        # novel percentage data
+        self.id_to_percent = pd.read_csv(data_const.DATASET_TARGETS).to_numpy()
+        # split data
+        self.ep_to_split = pd.read_csv(data_const.DATASET_SPLITS).to_numpy()[:, :2]
+        # init dataset
+        root = data_const.DATASET_ROOT
+        super().__init__(root, default_loader, None, transform, target_transform,
+                         self.is_valid_file)
 
-    @staticmethod
-    def correct_class_to_idx():
-        # update class_to_idx for easier classification
-        class_ordering = data_const.NORMAL_CLASSES + data_const.NOVEL_VALID_CLASSES + \
-            data_const.NOVEL_TEST_CLASSES
-        return {c: i for i, c in enumerate(class_ordering)}
+    def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
+        classes = []
+        if self.split not in [data_const.SplitEnum.VALID_NOVEL, data_const.SplitEnum.TEST_NOVEL]:
+            classes += data_const.NORMAL_CLASSES
+        if self.split in [data_const.SplitEnum.VALID, data_const.SplitEnum.VALID_NOVEL]:
+            classes += data_const.NOVEL_VALID_CLASSES
+        if self.split in [data_const.SplitEnum.TEST, data_const.SplitEnum.TEST_NOVEL]:
+            classes += data_const.NOVEL_TEST_CLASSES
+        return classes, {cls: data_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
 
-    @staticmethod
-    def make_dataset(directory, class_to_idx, extensions=None, is_valid_file=None):
-        class_to_idx = PolycraftDataset.correct_class_to_idx()
-        # make ImageFolder dataset
-        instances = ImageFolder.make_dataset(directory, class_to_idx, extensions, is_valid_file)
-        # load target CSV
-        target_df = pd.read_csv(data_const.DATASET_TARGETS)
-        ids = target_df["id"].to_numpy()
-        novel_percents = target_df["novel_percent"].to_numpy()
-        reject_indices = []
-        # apply correction to novel labels
-        for i, instance in enumerate(instances):
-            raw_path, raw_target = instance
-            path = Path(raw_path)
-            novel_target = class_to_idx[path.parts[-3]]
-            cur_id = "/".join(path.parts[-3:-1] + (path.stem,))
-            if raw_target != class_to_idx["normal"]:
-                index = np.argwhere(ids == cur_id)
-                if index.shape[0] != 1:
-                    print("Warning found %i targets for image: %s" % (index.shape[0], cur_id))
-                else:
-                    if novel_percents[index] >= data_const.NOV_THRESH:
-                        instances[i] = (raw_path, novel_target)
-                    else:
-                        reject_indices.append(i)
-        # remove images with ambiguous labels, starting at end for consistent indexing
-        for i in reversed(reject_indices):
-            del instances[i]
-        return instances
-
-
-def polycraft_dataset(transform=None):
-    return PolycraftDataset(transform=transform)
+    def is_valid_file(self, path: str) -> bool:
+        path = Path(path)
+        # reject file if not png
+        if not path.suffix.lower() == ".png":
+            return False
+        # reject file if not above novel percentage
+        cls_label = path.parts[-3]
+        cur_id = "/".join(path.parts[-3:-1] + (path.stem,))
+        if cls_label != "normal":
+            id_ind = np.argwhere(self.id_to_percent == cur_id)
+            if id_ind.shape[0] != 1:
+                print("Warning found %i targets for image: %s" % (id_ind.shape[0], cur_id))
+            else:
+                novel_percent = self.id_to_percent[id_ind[0, 0], 1]
+                if novel_percent < data_const.NOV_THRESH:
+                    return False
+        # reject file if not in split based on class
+        if cls_label in data_const.NOVEL_VALID_CLASSES and \
+                self.split not in [data_const.SplitEnum.VALID, data_const.SplitEnum.VALID_NOVEL]:
+            return False
+        if cls_label in data_const.NOVEL_TEST_CLASSES and \
+                self.split not in [data_const.SplitEnum.TEST, data_const.SplitEnum.TEST_NOVEL]:
+            return False
+        # reject normal class file if not episode not in split
+        if cls_label in data_const.NORMAL_CLASSES:
+            cur_ep = "/".join(path.parts[-3:-1])
+            ep_ind = np.argwhere(self.ep_to_split == cur_ep)
+            if ep_ind.shape[0] != 1:
+                print("Warning found %i splits for episode: %s" % (id_ind.shape[0], cur_ep))
+            split_label = self.ep_to_split[ep_ind[0, 0], 1]
+            if split_label == "train" and \
+                    self.split not in [data_const.SplitEnum.TRAIN]:
+                return False
+            if split_label == "valid" and \
+                    self.split not in [data_const.SplitEnum.VALID, data_const.SplitEnum.VALID_NORM]:
+                return False
+            if split_label == "test" and \
+                    self.split not in [data_const.SplitEnum.TEST, data_const.SplitEnum.TEST_NORM]:
+                return False
+        # file has passed all tests
+        return True

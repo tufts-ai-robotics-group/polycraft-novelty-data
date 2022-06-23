@@ -1,3 +1,4 @@
+from enum import Enum
 import importlib.resources
 from pathlib import Path
 
@@ -17,6 +18,18 @@ NOV_THRESH = .01
 NORMAL_SPLIT = [.8, .1, .1]
 VALID_SPLIT = [0, 1, 0]
 TEST_SPLIT = [0, 0, 1]
+
+
+class SplitEnum(str, Enum):
+    TRAIN = "train"
+    VALID = "valid"
+    TEST = "test"
+    VALID_NORM = "valid_norm"
+    VALID_NOVEL = "valid_novel"
+    TEST_NORM = "test_norm"
+    TEST_NOVEL = "test_novel"
+
+
 # constants related to classes
 NORMAL_CLASSES = [
     "normal",
@@ -78,3 +91,5 @@ NOVEL_TEST_CLASSES = [
     "item_vine",
     "item_emerald_block",
 ]
+ALL_CLASSES = NORMAL_CLASSES + NOVEL_VALID_CLASSES + NOVEL_TEST_CLASSES
+ALL_CLASS_TO_IDX = {c: i for i, c in enumerate(ALL_CLASSES)}
