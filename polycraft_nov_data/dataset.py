@@ -1,6 +1,6 @@
 from pathlib import Path
 import shutil
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 import urllib.request
 
 import pandas as pd
@@ -81,7 +81,7 @@ class NovelCraft(DatasetFolder):
         if cls_label in novelcraft_const.NOVEL_TEST_CLASSES and \
                 self.split not in [split_enum.TEST, split_enum.TEST_NOVEL]:
             return False
-        # reject normal class file if not episode not in split
+        # reject normal class file if episode not in split
         if cls_label in novelcraft_const.NORMAL_CLASSES:
             cur_ep = "/".join(path.parts[-3:-1])
             ep_ind = np.argwhere(self.ep_to_split == cur_ep)
@@ -102,12 +102,29 @@ class NovelCraft(DatasetFolder):
 class EpisodeDataset(DatasetFolder):
     def __init__(self,
                  split: str,
-                 transform: Optional[Callable] = None,
-                 target_transform: Optional[Callable] = None) -> None:
+                 transform: Optional[Callable] = None) -> None:
         download_datasets()
         # validate split choice
         if split not in set(item.value for item in episode_const.SplitEnum):
             raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
                              "\n".join(set(item.value for item in episode_const.SplitEnum)))
         self.split = split
-        # TODO get frame with frame ID as target
+        # init dataset
+        root = novelcraft_const.DATASET_ROOT
+        super().__init__(root, default_loader, "png", transform, None, None)
+
+    def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
+        classes = []
+        split_enum = episode_const.SplitEnum
+        if self.split == split_enum.TRAIN:
+            classes += episode_const.NORMAL_CLASSES
+        if self.split == split_enum.TEST:
+            classes += episode_const.TEST_CLASSES
+        # classes always mapped to same target index but only includes non-empty classes
+        return classes, {cls: episode_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
+
+    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+        # overload item retrieval to return (sample, path) since target isn't needed
+        sample, target = super().__getitem__(index)
+        path = self.samples[index]
+        return sample, path

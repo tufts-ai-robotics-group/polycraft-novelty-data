@@ -1,4 +1,4 @@
-from polycraft_nov_data.dataset import NovelCraft
+from polycraft_nov_data.dataset import NovelCraft, EpisodeDataset
 
 
 def test_novelcraft_len():
@@ -13,3 +13,10 @@ def test_novelcraft_len():
     assert len(test_set) == 4420
     assert len(valid_novel_set) == 332
     assert len(test_novel_set) == 3530
+
+
+def test_episode_len():
+    # TODO remove ignores when function completed
+    train_set = EpisodeDataset("train")  # noqa: F841
+    test_set = EpisodeDataset("test")  # noqa: F841
+    # TODO check length of datasets
