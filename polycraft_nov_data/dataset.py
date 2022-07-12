@@ -8,6 +8,7 @@ import numpy as np
 from torchvision.datasets import DatasetFolder
 from torchvision.datasets.folder import default_loader
 
+import polycraft_nov_data.episode_const as episode_const
 import polycraft_nov_data.novelcraft_const as novelcraft_const
 
 
@@ -16,11 +17,12 @@ def download_datasets():
     """
     # assume data is downloaded if folder contains subfolders
     if sum((1 if f.is_dir() else 0) for f in novelcraft_const.DATASET_ROOT.iterdir()) < 1:
-        # download, extract, and delete zip of the data
-        zip_path = novelcraft_const.DATASET_ROOT / Path("polycraft_data.zip")
-        urllib.request.urlretrieve(novelcraft_const.DATA_URL, zip_path)
-        shutil.unpack_archive(zip_path, novelcraft_const.DATASET_ROOT)
-        zip_path.unlink()
+        for const in [episode_const, novelcraft_const]:
+            # download, extract, and delete zip of the data
+            zip_path = const.DATASET_ROOT / Path("temp.zip")
+            urllib.request.urlretrieve(const.DATA_URL, zip_path)
+            shutil.unpack_archive(zip_path, const.DATASET_ROOT)
+            zip_path.unlink()
 
 
 class NovelCraft(DatasetFolder):
@@ -97,16 +99,15 @@ class NovelCraft(DatasetFolder):
         return True
 
 
-class TaskDataset(DatasetFolder):
+class EpisodeDataset(DatasetFolder):
     def __init__(self,
                  split: str,
                  transform: Optional[Callable] = None,
                  target_transform: Optional[Callable] = None) -> None:
         download_datasets()
         # validate split choice
-        valid_splits = [novelcraft_const.SplitEnum.TRAIN, novelcraft_const.SplitEnum.TEST]
-        if split not in valid_splits:
-            raise ValueError(f"TaskDataset split '{split}' not one of following:\n" +
-                             "\n".join(valid_splits))
+        if split not in set(item.value for item in episode_const.SplitEnum):
+            raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
+                             "\n".join(set(item.value for item in episode_const.SplitEnum)))
         self.split = split
         # TODO get frame with frame ID as target
