@@ -4,8 +4,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from polycraft_nov_data.dataset import polycraft_dataset
-import polycraft_nov_data.data_const as data_const
+from polycraft_nov_data.dataset import NovelCraft
+import polycraft_nov_data.novelcraft_const as novelcraft_const
 
 
 def split_error(cur_split, goal_split):
@@ -15,25 +15,31 @@ def split_error(cur_split, goal_split):
 if __name__ == "__main__":
     # nested dict with keys target, ep and value image count
     target_to_eps = {}
-    dataset = polycraft_dataset()
-    target_idx_to_name = {val: key for key, val in dataset.class_to_idx.items()}
-    for img_path_str, target_idx in dataset.imgs:
-        img_path = Path(img_path_str)
-        target = target_idx_to_name[target_idx]
-        ep_num = img_path.parent.stem
-        eps_to_count = target_to_eps.get(target, {})
-        eps_to_count[ep_num] = eps_to_count.get(ep_num, 0) + 1
-        target_to_eps[target] = eps_to_count
+    split_enum = novelcraft_const.SplitEnum
+    datasets = [
+        NovelCraft(split_enum.TRAIN.value),
+        NovelCraft(split_enum.VALID.value),
+        NovelCraft(split_enum.TEST.value)
+    ]
+    for dataset in datasets:
+        for img_path_str, target_idx in dataset.samples:
+            img_path = Path(img_path_str)
+            target = novelcraft_const.ALL_IDX_TO_CLASS[target_idx]
+            ep_num = img_path.parent.stem
+            eps_to_count = target_to_eps.get(target, {})
+            eps_to_count[ep_num] = eps_to_count.get(ep_num, 0) + 1
+            target_to_eps[target] = eps_to_count
 
     rng = np.random.default_rng(seed=42)
     split_df = pd.DataFrame(columns=["episode", "split", "num_frames"])
-    for target in data_const.NORMAL_CLASSES:
+    for target in novelcraft_const.NORMAL_CLASSES:
         eps_to_count = target_to_eps[target]
         ep_nums = np.array(list(eps_to_count.keys()))
         ep_counts = np.array(list(eps_to_count.values()))
         target_count = np.sum(ep_counts)
         # get desired split lengths with the first non-zero entry resolving rounding errors
-        goal_split_lens = [math.ceil(target_count * percent) for percent in data_const.NORMAL_SPLIT]
+        goal_split_lens = [math.ceil(target_count * percent)
+                           for percent in novelcraft_const.NORMAL_SPLIT]
         first_non_zero = 0
         for j, split_length in enumerate(goal_split_lens):
             if split_length > 0:
@@ -41,7 +47,8 @@ if __name__ == "__main__":
                 break
         goal_split_lens[first_non_zero] += target_count - sum(goal_split_lens)
         # get desired number of episodes with the first non-zero entry resolving rounding errors
-        split_eps = [math.ceil(len(ep_counts) * percent) for percent in data_const.NORMAL_SPLIT]
+        split_eps = [math.ceil(len(ep_counts) * percent)
+                     for percent in novelcraft_const.NORMAL_SPLIT]
         first_non_zero = 0
         for j, split_length in enumerate(split_eps):
             if split_length > 0:
@@ -83,4 +90,4 @@ if __name__ == "__main__":
                         "num_frames": str(ep_counts[best_split[i][sort_j]]),
                     }, [split_df.shape[0]])
                 ])
-    split_df.to_csv(data_const.dataset_root / "splits.csv", index=False)
+    split_df.to_csv(novelcraft_const.dataset_root / "splits.csv", index=False)

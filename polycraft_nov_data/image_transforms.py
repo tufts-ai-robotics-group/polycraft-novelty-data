@@ -3,7 +3,7 @@ from torchvision import transforms
 from torchvision.transforms import functional
 from torch.nn.functional import pad
 
-import polycraft_nov_data.data_const as data_const
+import polycraft_nov_data.novelcraft_const as novelcraft_const
 
 
 class ScaleImage:
@@ -85,7 +85,7 @@ class PatchTrainPreprocess:
             transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            SamplePatch(data_const.PATCH_SHAPE),
+            SamplePatch(novelcraft_const.PATCH_SHAPE),
         ])
 
     def __call__(self, tensor):
@@ -102,7 +102,7 @@ class PatchTestPreprocess:
             transforms.ToTensor(),
             CropUI(),
             ScaleImage(image_scale),
-            ToPatches(data_const.PATCH_SHAPE),
+            ToPatches(novelcraft_const.PATCH_SHAPE),
         ])
 
     def __call__(self, tensor):

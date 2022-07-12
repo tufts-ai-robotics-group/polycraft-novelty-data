@@ -1,6 +1,6 @@
 import pandas as pd
 
-import polycraft_nov_data.data_const as data_const
+import polycraft_nov_data.novelcraft_const as novelcraft_const
 
 
 class SplitStats:
@@ -12,7 +12,7 @@ class SplitStats:
 
 if __name__ == "__main__":
     # compute stats for novel data
-    targets_df = pd.read_csv(data_const.dataset_root / "targets.csv")
+    targets_df = pd.read_csv(novelcraft_const.dataset_root / "targets.csv")
     type_to_episodes = {}
     type_to_frames_raw = {}
     type_to_frames_filtered = {}
@@ -24,22 +24,22 @@ if __name__ == "__main__":
         # add unseen episode to episode list
         if episode not in type_to_episodes.get(nov_type, []):
             type_to_episodes[nov_type] = type_to_episodes.get(nov_type, []) + [episode]
-        if nov_percent >= data_const.NOV_THRESH:
+        if nov_percent >= novelcraft_const.NOV_THRESH:
             # add 1 to filtered frame count if usable
             type_to_frames_filtered[nov_type] = type_to_frames_filtered.get(nov_type, 0) + 1
     # combine classes into splits
     valid_stats = SplitStats()
-    for valid_class in data_const.NOVEL_VALID_CLASSES:
+    for valid_class in novelcraft_const.NOVEL_VALID_CLASSES:
         valid_stats.num_ep += len(type_to_episodes.get(valid_class, []))
         valid_stats.frames_raw += type_to_frames_raw.get(valid_class, 0)
         valid_stats.frames_filtered += type_to_frames_filtered.get(valid_class, 0)
     test_stats = SplitStats()
-    for test_class in data_const.NOVEL_TEST_CLASSES:
+    for test_class in novelcraft_const.NOVEL_TEST_CLASSES:
         test_stats.num_ep += len(type_to_episodes.get(test_class, []))
         test_stats.frames_raw += type_to_frames_raw.get(test_class, 0)
         test_stats.frames_filtered += type_to_frames_filtered.get(test_class, 0)
     # compute stats for normal data
-    splits_df = pd.read_csv(data_const.dataset_root / "splits.csv")
+    splits_df = pd.read_csv(novelcraft_const.dataset_root / "splits.csv")
     for _, row in splits_df.iterrows():
         raw_ep, split, num_frames = row
         nov_type, episode = raw_ep.split("/")
@@ -56,13 +56,13 @@ if __name__ == "__main__":
                 num_frames
             type_to_episodes[nov_split] = type_to_episodes.get(nov_split, []) + [episode]
     # collect raw frame count for normal classes
-    for nov_type in data_const.NORMAL_CLASSES:
+    for nov_type in novelcraft_const.NORMAL_CLASSES:
         if nov_type == "normal":
             continue
         for split in ["train", "valid", "test"]:
             nov_split = nov_type + "_" + split
             for ep in type_to_episodes.get(nov_split, []):
-                ep_dir = data_const.DATASET_ROOT / (nov_type + "/" + ep)
+                ep_dir = novelcraft_const.DATASET_ROOT / (nov_type + "/" + ep)
                 # count number of PNGs for raw count
                 num_frames = len(list(ep_dir.glob("*.png")))
                 type_to_frames_raw[nov_split] = type_to_frames_raw.get(nov_split, 0) + num_frames
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     norm_valid_stats = SplitStats()
     norm_test_stats = SplitStats()
     norm_stats_list = [norm_train_stats, norm_valid_stats, norm_test_stats]
-    for nov_type in data_const.NORMAL_CLASSES:
+    for nov_type in novelcraft_const.NORMAL_CLASSES:
         for split, cur_stats in zip(["train", "valid", "test"], norm_stats_list):
             nov_split = nov_type + "_" + split
             cur_stats.num_ep += len(type_to_episodes.get(nov_split, []))
