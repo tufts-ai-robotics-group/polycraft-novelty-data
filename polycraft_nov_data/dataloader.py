@@ -3,7 +3,7 @@ from typing import Callable, Optional
 import torch
 from torch.utils import data
 
-from polycraft_nov_data.dataset import NovelCraft
+from polycraft_nov_data.dataset import NovelCraft, EpisodeDataset
 
 
 def balanced_sampler(train_set):
@@ -49,4 +49,21 @@ def novelcraft_dataloader(
     }
     if balance_classes:
         dataloader_kwargs["sampler"] = balanced_sampler
+    return data.DataLoader(dataset, **dataloader_kwargs)
+
+
+def episode_dataloader(
+        split: str,
+        transform: Optional[Callable] = None,
+        batch_size: Optional[int] = 1):
+    dataset = EpisodeDataset(split, transform)
+    # DataLoader args
+    num_workers = 4
+    prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
+    dataloader_kwargs = {
+        "num_workers": num_workers,
+        "prefetch_factor": prefetch_factor,
+        "persistent_workers": True,
+        "batch_size": batch_size,
+    }
     return data.DataLoader(dataset, **dataloader_kwargs)

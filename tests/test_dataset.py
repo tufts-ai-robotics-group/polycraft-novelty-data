@@ -16,7 +16,8 @@ def test_novelcraft_len():
 
 
 def test_episode_len():
-    # TODO remove ignores when function completed
-    train_set = EpisodeDataset("train")  # noqa: F841
-    test_set = EpisodeDataset("test")  # noqa: F841
-    # TODO check length of datasets
+    train_set = EpisodeDataset("train")
+    test_set = EpisodeDataset("test")
+    # check length of datasets
+    assert len(train_set) == 4897
+    assert len(test_set) == 14227

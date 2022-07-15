@@ -23,7 +23,7 @@ NORMAL_CLASSES = [
     "normal",
 ]
 TEST_CLASSES = [
-    "ArenaBlockTypeHard",
+    "ArenaBlockHard",
     "fence",
     "tree_easy",
 ]
