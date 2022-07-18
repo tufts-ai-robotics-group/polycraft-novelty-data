@@ -1,9 +1,9 @@
-import polycraft_nov_data.novelcraft_const as novelcraft_const
+import polycraft_nov_data.novelcraft_const as nc_const
 
 
 if __name__ == "__main__":
     class_to_lens = {}
-    for dir in novelcraft_const.dataset_root.iterdir():
+    for dir in nc_const.dataset_root.iterdir():
         if dir.is_dir():
             lens = []
             for ep in dir.iterdir():

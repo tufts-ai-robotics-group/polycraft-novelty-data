@@ -8,16 +8,16 @@ import numpy as np
 from torchvision.datasets import DatasetFolder
 from torchvision.datasets.folder import default_loader
 
-import polycraft_nov_data.episode_const as episode_const
-import polycraft_nov_data.novelcraft_const as novelcraft_const
+import polycraft_nov_data.episode_const as ep_const
+import polycraft_nov_data.novelcraft_const as nc_const
 
 
 def download_datasets():
     """Download Polycraft datasets if not downloaded
     """
     # assume data is downloaded if folder contains subfolders
-    if sum((1 if f.is_dir() else 0) for f in novelcraft_const.DATASET_ROOT.iterdir()) < 1:
-        for const in [episode_const, novelcraft_const]:
+    if sum((1 if f.is_dir() else 0) for f in nc_const.DATASET_ROOT.iterdir()) < 1:
+        for const in [ep_const, nc_const]:
             # download, extract, and delete zip of the data
             zip_path = const.DATASET_ROOT / Path("temp.zip")
             urllib.request.urlretrieve(const.DATA_URL, zip_path)
@@ -32,30 +32,30 @@ class NovelCraft(DatasetFolder):
                  target_transform: Optional[Callable] = None) -> None:
         download_datasets()
         # make split specify novel, norm, or both
-        if split not in set(item.value for item in novelcraft_const.SplitEnum):
+        if split not in set(item.value for item in nc_const.SplitEnum):
             raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
-                             "\n".join(set(item.value for item in novelcraft_const.SplitEnum)))
+                             "\n".join(set(item.value for item in nc_const.SplitEnum)))
         self.split = split
         # novel percentage data
-        self.id_to_percent = pd.read_csv(novelcraft_const.DATASET_TARGETS).to_numpy()
+        self.id_to_percent = pd.read_csv(nc_const.DATASET_TARGETS).to_numpy()
         # split data
-        self.ep_to_split = pd.read_csv(novelcraft_const.DATASET_SPLITS).to_numpy()[:, :2]
+        self.ep_to_split = pd.read_csv(nc_const.DATASET_SPLITS).to_numpy()[:, :2]
         # init dataset
-        root = novelcraft_const.DATASET_ROOT
+        root = nc_const.DATASET_ROOT
         super().__init__(root, default_loader, None, transform, target_transform,
                          self.is_valid_file)
 
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
         classes = []
-        split_enum = novelcraft_const.SplitEnum
+        split_enum = nc_const.SplitEnum
         if self.split not in [split_enum.VALID_NOVEL, split_enum.TEST_NOVEL]:
-            classes += novelcraft_const.NORMAL_CLASSES
+            classes += nc_const.NORMAL_CLASSES
         if self.split in [split_enum.VALID, split_enum.VALID_NOVEL]:
-            classes += novelcraft_const.NOVEL_VALID_CLASSES
+            classes += nc_const.NOVEL_VALID_CLASSES
         if self.split in [split_enum.TEST, split_enum.TEST_NOVEL]:
-            classes += novelcraft_const.NOVEL_TEST_CLASSES
+            classes += nc_const.NOVEL_TEST_CLASSES
         # classes always mapped to same target index but only includes non-empty classes
-        return classes, {cls: novelcraft_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
+        return classes, {cls: nc_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
 
     def is_valid_file(self, path: str) -> bool:
         path = Path(path)
@@ -71,18 +71,18 @@ class NovelCraft(DatasetFolder):
                 print("Warning found %i targets for image: %s" % (id_ind.shape[0], cur_id))
             else:
                 novel_percent = self.id_to_percent[id_ind[0, 0], 1]
-                if novel_percent < novelcraft_const.NOV_THRESH:
+                if novel_percent < nc_const.NOV_THRESH:
                     return False
         # reject file if not in split based on class
-        split_enum = novelcraft_const.SplitEnum
-        if cls_label in novelcraft_const.NOVEL_VALID_CLASSES and \
+        split_enum = nc_const.SplitEnum
+        if cls_label in nc_const.NOVEL_VALID_CLASSES and \
                 self.split not in [split_enum.VALID, split_enum.VALID_NOVEL]:
             return False
-        if cls_label in novelcraft_const.NOVEL_TEST_CLASSES and \
+        if cls_label in nc_const.NOVEL_TEST_CLASSES and \
                 self.split not in [split_enum.TEST, split_enum.TEST_NOVEL]:
             return False
         # reject normal class file if episode not in split
-        if cls_label in novelcraft_const.NORMAL_CLASSES:
+        if cls_label in nc_const.NORMAL_CLASSES:
             cur_ep = "/".join(path.parts[-3:-1])
             ep_ind = np.argwhere(self.ep_to_split == cur_ep)
             if ep_ind.shape[0] != 1:
@@ -105,26 +105,27 @@ class EpisodeDataset(DatasetFolder):
                  transform: Optional[Callable] = None) -> None:
         download_datasets()
         # validate split choice
-        if split not in set(item.value for item in episode_const.SplitEnum):
+        if split not in set(item.value for item in ep_const.SplitEnum):
             raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
-                             "\n".join(set(item.value for item in episode_const.SplitEnum)))
+                             "\n".join(set(item.value for item in ep_const.SplitEnum)))
         self.split = split
         # init dataset
-        root = novelcraft_const.DATASET_ROOT
+        root = nc_const.DATASET_ROOT
         super().__init__(root, default_loader, "png", transform, None, None)
 
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
         classes = []
-        split_enum = episode_const.SplitEnum
+        split_enum = ep_const.SplitEnum
         if self.split == split_enum.TRAIN:
-            classes += episode_const.NORMAL_CLASSES
+            classes += ep_const.NORMAL_CLASSES
         if self.split == split_enum.TEST:
-            classes += episode_const.TEST_CLASSES
+            classes += ep_const.TEST_CLASSES
         # classes always mapped to same target index but only includes non-empty classes
-        return classes, {cls: episode_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
+        return classes, {cls: ep_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         # overload item retrieval to return (sample, path) since target isn't needed
         sample, target = super().__getitem__(index)
-        path = self.samples[index]
-        return sample, path
+        path, target = self.samples[index]
+        # get path relative to the dataset root, so path is "class/ep_num/frame_num"
+        return sample, Path(path).relative_to(ep_const.DATASET_ROOT)
