@@ -27,6 +27,11 @@ TEST_CLASSES = [
     "fence",
     "tree_easy",
 ]
+TEST_CLASS_FIRST_NOVEL_EP = {
+    "ArenaBlockHard": 15,
+    "fence": 14,
+    "tree_easy": 15,
+}
 ALL_CLASSES = NORMAL_CLASSES + TEST_CLASSES
 ALL_CLASS_TO_IDX = {c: i for i, c in enumerate(ALL_CLASSES)}
 ALL_IDX_TO_CLASS = {i: c for i, c in enumerate(ALL_CLASSES)}
