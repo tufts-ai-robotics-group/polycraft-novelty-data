@@ -128,4 +128,4 @@ class EpisodeDataset(DatasetFolder):
         sample, target = super().__getitem__(index)
         path, target = self.samples[index]
         # get path relative to the dataset root, so path is "class/ep_num/frame_num"
-        return sample, Path(path).relative_to(ep_const.DATASET_ROOT)
+        return sample, str(Path(path).relative_to(ep_const.DATASET_ROOT))
