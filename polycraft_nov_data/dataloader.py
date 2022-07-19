@@ -55,7 +55,8 @@ def novelcraft_dataloader(
 def episode_dataloader(
         split: str,
         transform: Optional[Callable] = None,
-        batch_size: Optional[int] = 1):
+        batch_size: Optional[int] = 1,
+        collate_fn=None):
     dataset = EpisodeDataset(split, transform)
     # DataLoader args
     num_workers = 4
@@ -65,5 +66,6 @@ def episode_dataloader(
         "prefetch_factor": prefetch_factor,
         "persistent_workers": True,
         "batch_size": batch_size,
+        "collate_fn": collate_fn,
     }
     return data.DataLoader(dataset, **dataloader_kwargs)
