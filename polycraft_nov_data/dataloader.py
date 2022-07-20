@@ -25,9 +25,11 @@ def collate_patches(dataset_entry):
         tuple: Tuple containing set of patches with shape (B, C, H, W), where B = PH * PW,
                and target int as a tensor
     """
-    data, target = dataset_entry
+    data, target = dataset_entry[0]
     shape = data.shape
-    return (torch.reshape(data, (-1,) + shape[2:]), torch.tensor(target))
+    if type(target) != str:
+        target = torch.tensor(target)
+    return (torch.reshape(data, (-1,) + shape[2:]), target)
 
 
 def novelcraft_dataloader(
