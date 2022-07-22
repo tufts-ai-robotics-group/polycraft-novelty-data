@@ -50,7 +50,7 @@ def novelcraft_dataloader(
         "collate_fn": collate_fn,
     }
     if balance_classes:
-        dataloader_kwargs["sampler"] = balanced_sampler
+        dataloader_kwargs["sampler"] = balanced_sampler()
     return data.DataLoader(dataset, **dataloader_kwargs)
 
 
