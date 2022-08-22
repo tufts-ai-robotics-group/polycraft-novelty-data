@@ -6,13 +6,17 @@ from torch.utils import data
 from polycraft_nov_data.dataset import NovelCraft, EpisodeDataset
 
 
-def balanced_sampler(train_set):
+def balanced_sampler(train_set, override_len=None):
     # determine class balancing for training
     train_targets = torch.Tensor([target for _, target in train_set])
     train_weight = torch.zeros_like(train_targets)
     for target in torch.unique(train_targets):
         train_weight[train_targets == target] = 1 / torch.sum(train_targets == target)
-    return data.WeightedRandomSampler(train_weight, len(train_set))
+    if override_len is None:
+        num_samples = len(train_set)
+    else:
+        num_samples = override_len
+    return data.WeightedRandomSampler(train_weight, num_samples)
 
 
 def collate_patches(dataset_entry):
@@ -69,7 +73,8 @@ def novelcraft_plus_dataloader(
     dataset = NovelCraft(split, transform, training_plus=True)
     dataloader_kwargs = default_dataloader_kwargs(batch_size, collate_fn)
     if balance_classes:
-        dataloader_kwargs["sampler"] = balanced_sampler(dataset)
+        dataloader_kwargs["sampler"] = balanced_sampler(
+            dataset, len(NovelCraft(split, transform, training_plus=False)))
     return data.DataLoader(dataset, **dataloader_kwargs)
 
 
