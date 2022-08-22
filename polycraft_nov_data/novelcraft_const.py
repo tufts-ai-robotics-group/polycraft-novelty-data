@@ -5,6 +5,7 @@ from pathlib import Path
 
 # constants related to data paths
 DATA_URL = "https://tufts.box.com/shared/static/fq0awbrahmsr97zetqo1v2uz5rjkvon6.zip"
+NOVELCRAFT_PLUS_URL = "https://tufts.box.com/shared/static/6ydngg35lmafwd5ald33cdz3on17u63x.zip"
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = Path(dataset_root)
 DATASET_TARGETS = DATASET_ROOT / Path("targets.csv")

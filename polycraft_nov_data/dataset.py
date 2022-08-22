@@ -17,11 +17,21 @@ def download_datasets():
     """
     # assume data is downloaded if folder contains subfolders
     if sum((1 if f.is_dir() else 0) for f in nc_const.DATASET_ROOT.iterdir()) < 1:
-        for const in [ep_const, nc_const]:
+        urls = [
+            ep_const.DATA_URL,
+            nc_const.DATA_URL,
+            nc_const.NOVELCRAFT_PLUS_URL
+        ]
+        roots = [
+            ep_const.DATASET_ROOT,
+            nc_const.DATASET_ROOT,
+            nc_const.DATASET_ROOT / "normal",
+        ]
+        for url, root in zip(urls, roots):
             # download, extract, and delete zip of the data
-            zip_path = const.DATASET_ROOT / Path("temp.zip")
-            urllib.request.urlretrieve(const.DATA_URL, zip_path)
-            shutil.unpack_archive(zip_path, const.DATASET_ROOT)
+            zip_path = root / Path("temp.zip")
+            urllib.request.urlretrieve(url, zip_path)
+            shutil.unpack_archive(zip_path, root)
             zip_path.unlink()
 
 
