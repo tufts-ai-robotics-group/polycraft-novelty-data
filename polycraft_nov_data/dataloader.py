@@ -8,7 +8,7 @@ from polycraft_nov_data.dataset import NovelCraft, EpisodeDataset
 
 def balanced_sampler(train_set, override_len=None):
     # determine class balancing for training
-    train_targets = torch.Tensor([target for _, target in train_set])
+    train_targets = torch.Tensor(train_set.targets)
     train_weight = torch.zeros_like(train_targets)
     for target in torch.unique(train_targets):
         train_weight[train_targets == target] = 1 / torch.sum(train_targets == target)

@@ -74,7 +74,7 @@ class NovelCraft(DatasetFolder):
         path = Path(path)
         split_enum = nc_const.SplitEnum
         # reject file if not png
-        if not path.suffix.lower() == ".png":
+        if path.suffix.lower() != ".png":
             return False
         # reject file if from NovelCraft+ and want only normal set
         if not self.training_plus:
@@ -132,7 +132,7 @@ class EpisodeDataset(DatasetFolder):
         self.split = split
         # init dataset
         root = nc_const.DATASET_ROOT
-        super().__init__(root, default_loader, "png", transform, None, None)
+        super().__init__(root, default_loader, None, transform, None, self.is_valid_file)
 
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
         classes = []
@@ -143,6 +143,16 @@ class EpisodeDataset(DatasetFolder):
             classes += ep_const.TEST_CLASSES
         # classes always mapped to same target index but only includes non-empty classes
         return classes, {cls: ep_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
+
+    def is_valid_file(self, path: str) -> bool:
+        path = Path(path)
+        # reject file if not png
+        if path.suffix.lower() != ".png":
+            return False
+        # reject file if from NovelCraft+
+        if "normal_" in str(path):
+            return False
+        return True
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         # overload item retrieval to return (sample, path) since target isn't needed
