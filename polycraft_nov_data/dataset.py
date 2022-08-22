@@ -39,8 +39,11 @@ class NovelCraft(DatasetFolder):
     def __init__(self,
                  split: str,
                  transform: Optional[Callable] = None,
-                 target_transform: Optional[Callable] = None) -> None:
+                 target_transform: Optional[Callable] = None,
+                 training_plus: bool = False) -> None:
         download_datasets()
+        # whether to use NovelCraft+ training set
+        self.training_plus = training_plus
         # make split specify novel, norm, or both
         if split not in set(item.value for item in nc_const.SplitEnum):
             raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
@@ -69,9 +72,18 @@ class NovelCraft(DatasetFolder):
 
     def is_valid_file(self, path: str) -> bool:
         path = Path(path)
+        split_enum = nc_const.SplitEnum
         # reject file if not png
         if not path.suffix.lower() == ".png":
             return False
+        # reject file if from NovelCraft+ and want only normal set
+        if not self.training_plus:
+            if "normal_" in str(path):
+                return False
+        # accept file if from NovelCraft+ and want that training set
+        else:
+            if self.split == split_enum.TRAIN:
+                return True
         # reject file if not above novel percentage
         cls_label = path.parts[-3]
         cur_id = "/".join(path.parts[-3:-1] + (path.stem,))
@@ -84,7 +96,6 @@ class NovelCraft(DatasetFolder):
                 if novel_percent < nc_const.NOV_THRESH:
                     return False
         # reject file if not in split based on class
-        split_enum = nc_const.SplitEnum
         if cls_label in nc_const.NOVEL_VALID_CLASSES and \
                 self.split not in [split_enum.VALID, split_enum.VALID_NOVEL]:
             return False

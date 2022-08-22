@@ -32,14 +32,9 @@ def collate_patches(dataset_entry):
     return (torch.reshape(data, (-1,) + shape[2:]), target)
 
 
-def novelcraft_dataloader(
-        split: str,
-        transform: Optional[Callable] = None,
+def default_dataloader_kwargs(
         batch_size: Optional[int] = 1,
-        balance_classes: Optional[bool] = False,
         collate_fn=None):
-    dataset = NovelCraft(split, transform)
-    # DataLoader args
     num_workers = 4
     prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
     dataloader_kwargs = {
@@ -49,6 +44,30 @@ def novelcraft_dataloader(
         "batch_size": batch_size,
         "collate_fn": collate_fn,
     }
+    return dataloader_kwargs
+
+
+def novelcraft_dataloader(
+        split: str,
+        transform: Optional[Callable] = None,
+        batch_size: Optional[int] = 1,
+        balance_classes: Optional[bool] = False,
+        collate_fn=None):
+    dataset = NovelCraft(split, transform, training_plus=False)
+    dataloader_kwargs = default_dataloader_kwargs(batch_size, collate_fn)
+    if balance_classes:
+        dataloader_kwargs["sampler"] = balanced_sampler(dataset)
+    return data.DataLoader(dataset, **dataloader_kwargs)
+
+
+def novelcraft_plus_dataloader(
+        split: str,
+        transform: Optional[Callable] = None,
+        batch_size: Optional[int] = 1,
+        balance_classes: Optional[bool] = False,
+        collate_fn=None):
+    dataset = NovelCraft(split, transform, training_plus=True)
+    dataloader_kwargs = default_dataloader_kwargs(batch_size, collate_fn)
     if balance_classes:
         dataloader_kwargs["sampler"] = balanced_sampler(dataset)
     return data.DataLoader(dataset, **dataloader_kwargs)
@@ -60,14 +79,5 @@ def episode_dataloader(
         batch_size: Optional[int] = 1,
         collate_fn=None):
     dataset = EpisodeDataset(split, transform)
-    # DataLoader args
-    num_workers = 4
-    prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
-    dataloader_kwargs = {
-        "num_workers": num_workers,
-        "prefetch_factor": prefetch_factor,
-        "persistent_workers": True,
-        "batch_size": batch_size,
-        "collate_fn": collate_fn,
-    }
+    dataloader_kwargs = default_dataloader_kwargs(batch_size, collate_fn)
     return data.DataLoader(dataset, **dataloader_kwargs)
