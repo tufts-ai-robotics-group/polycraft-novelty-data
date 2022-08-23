@@ -73,8 +73,7 @@ def novelcraft_plus_dataloader(
     dataset = NovelCraft(split, transform, training_plus=True)
     dataloader_kwargs = default_dataloader_kwargs(batch_size, collate_fn)
     if balance_classes:
-        dataloader_kwargs["sampler"] = balanced_sampler(
-            dataset, len(NovelCraft(split, transform, training_plus=False)))
+        dataloader_kwargs["sampler"] = balanced_sampler(dataset)
     return data.DataLoader(dataset, **dataloader_kwargs)
 
 
