@@ -14,8 +14,6 @@ def test_novelcraft_loader_len():
 def test_novelcraft_plus_loader_len():
     train_loader = novelcraft_plus_dataloader("train", batch_size=1)
     assert len(train_loader) == 138468
-    train_loader = novelcraft_plus_dataloader("train", batch_size=1, balance_classes=True)
-    assert len(train_loader) == 7037
 
 
 def test_episode_loader_len():
