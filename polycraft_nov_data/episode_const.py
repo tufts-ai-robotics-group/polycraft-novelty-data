@@ -15,7 +15,10 @@ PATCH_SHAPE = (3, 32, 32)
 
 class SplitEnum(str, Enum):
     TRAIN = "train"
+    VALID = "valid"
     TEST = "test"
+    TEST_NORM = "test_norm"
+    TEST_NOVEL = "test_novel"
 
 
 # constants related to classes
@@ -31,6 +34,7 @@ TEST_CLASS_FIRST_NOVEL_EP = {
     "ArenaBlockHard": 15,
     "fence": 14,
     "tree_easy": 15,
+    "normal": 999999,  # normal is never novel
 }
 ALL_CLASSES = NORMAL_CLASSES + TEST_CLASSES
 ALL_CLASS_TO_IDX = {c: i for i, c in enumerate(ALL_CLASSES)}

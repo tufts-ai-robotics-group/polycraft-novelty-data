@@ -23,7 +23,11 @@ def test_novelcraft_plus_len():
 
 def test_episode_len():
     train_set = EpisodeDataset("train")
+    valid_set = EpisodeDataset("valid")
     test_set = EpisodeDataset("test")
+    test_novel_set = EpisodeDataset("test_novel")
     # check length of datasets
-    assert len(train_set) == 4897
-    assert len(test_set) == 14227
+    assert len(train_set) == 3917
+    assert len(test_set) == 14718
+    assert len(valid_set) == 489
+    assert len(test_novel_set) == 14227

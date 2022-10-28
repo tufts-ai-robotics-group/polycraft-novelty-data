@@ -107,7 +107,7 @@ class NovelCraft(DatasetFolder):
             cur_ep = "/".join(path.parts[-3:-1])
             ep_ind = np.argwhere(self.ep_to_split == cur_ep)
             if ep_ind.shape[0] != 1:
-                print("Warning found %i splits for episode: %s" % (id_ind.shape[0], cur_ep))
+                print("Warning found %i splits for episode: %s" % (ep_ind.shape[0], cur_ep))
             split_label = self.ep_to_split[ep_ind[0, 0], 1]
             if split_label == "train" and self.split not in [split_enum.TRAIN]:
                 return False
@@ -130,6 +130,8 @@ class EpisodeDataset(DatasetFolder):
             raise ValueError(f"NovelCraft split '{split}' not one of following:\n" +
                              "\n".join(set(item.value for item in ep_const.SplitEnum)))
         self.split = split
+        # split data
+        self.ep_to_split = pd.read_csv(nc_const.DATASET_SPLITS).to_numpy()[:, :2]
         # init dataset
         root = nc_const.DATASET_ROOT
         super().__init__(root, default_loader, None, transform, None, self.is_valid_file)
@@ -137,9 +139,9 @@ class EpisodeDataset(DatasetFolder):
     def find_classes(self, directory: str) -> Tuple[List[str], Dict[str, int]]:
         classes = []
         split_enum = ep_const.SplitEnum
-        if self.split == split_enum.TRAIN:
+        if self.split != split_enum.TEST_NOVEL:
             classes += ep_const.NORMAL_CLASSES
-        if self.split == split_enum.TEST:
+        if self.split == split_enum.TEST or self.split == split_enum.TEST_NOVEL:
             classes += ep_const.TEST_CLASSES
         # classes always mapped to same target index but only includes non-empty classes
         return classes, {cls: ep_const.ALL_CLASS_TO_IDX[cls] for cls in classes}
@@ -152,6 +154,22 @@ class EpisodeDataset(DatasetFolder):
         # reject file if from NovelCraft+
         if "normal_" in str(path):
             return False
+        # reject normal class file if episode not in split
+        cls_label = path.parts[-3]
+        split_enum = ep_const.SplitEnum
+        if cls_label in ep_const.NORMAL_CLASSES:
+            cur_ep = "/".join(path.parts[-3:-1])
+            ep_ind = np.argwhere(self.ep_to_split == cur_ep)
+            if ep_ind.shape[0] != 1:
+                print("Warning found %i splits for episode: %s" % (ep_ind.shape[0], cur_ep))
+            split_label = self.ep_to_split[ep_ind[0, 0], 1]
+            if split_label == "train" and self.split not in [split_enum.TRAIN]:
+                return False
+            if split_label == "valid" and \
+                    self.split not in [split_enum.VALID]:
+                return False
+            if split_label == "test" and self.split not in [split_enum.TEST, split_enum.TEST_NORM]:
+                return False
         return True
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
