@@ -10,9 +10,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8, <4",
     install_requires=[
-        "matplotlib",
         "numpy",
-        "scikit-image",
         "pandas",
         "torch",
         "torchvision",

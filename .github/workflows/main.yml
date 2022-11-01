@@ -9,16 +9,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.10'
-      - uses: actions/checkout@v3
       - name: Install pipenv
         run: pipx install pipenv
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.8'
           cache: 'pipenv'
       - run: pipenv install
       - name: Lint with flake8
