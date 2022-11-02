@@ -8,12 +8,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: Jimver/cuda-toolkit@v0.2.8
+        id: cuda-toolkit
+        with:
+          cuda: '11.7.0'
       - uses: actions/checkout@v3
       - name: Install pipenv
         run: pipx install pipenv
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           cache: 'pipenv'
       - run: pipenv install
       - name: Lint with flake8
