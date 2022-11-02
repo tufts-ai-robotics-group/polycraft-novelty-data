@@ -5,7 +5,7 @@
 Visual novelty dataset for the Polycraft domain.
 
 ## Installation
-If you do not have Pipenv installed, run the following:
+If you do not have Pipenv installed, run the following in Python 3.10:
 ```
 pip install pipenv
 ```
