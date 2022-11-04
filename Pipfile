@@ -3,10 +3,26 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[dev-packages]
+[[source]]
+url = "https://download.pytorch.org/whl/cpu/"
+verify_ssl = true
+name = "pytorch_cpu"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu116/"
+verify_ssl = true
+name = "pytorch_cu116"
 
 [packages]
 polycraft-nov-data = {editable = true, path = "."}
+
+[torch_cpu]
+torch = {index="pytorch_cpu"}
+torchvision = {index="pytorch_cpu"}
+
+[torch_cu116]
+torch = {index="pytorch_cu116"}
+torchvision = {index="pytorch_cu116"}
 
 [requires]
 python_version = "3.8"

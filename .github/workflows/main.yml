@@ -17,9 +17,9 @@ jobs:
         run: pipx install pipenv
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.10'
           cache: 'pipenv'
-      - run: pipenv install
+      - run: pipenv install --categories "packages torch_cpu"
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names

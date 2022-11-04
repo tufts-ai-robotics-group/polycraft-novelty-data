@@ -12,8 +12,6 @@ setup(
     install_requires=[
         "numpy",
         "pandas",
-        "torch",
-        "torchvision",
         # dev packages, not installing correctly when in extras_require
         "autopep8",
         "flake8",
