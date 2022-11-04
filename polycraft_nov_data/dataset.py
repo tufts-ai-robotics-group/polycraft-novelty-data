@@ -77,13 +77,13 @@ class NovelCraft(DatasetFolder):
         if path.suffix.lower() != ".png":
             return False
         # reject file if from NovelCraft+ and want only normal set
-        if not self.training_plus:
-            if "normal_" in str(path):
+        if "normal_" in str(path):
+            if not self.training_plus:
                 return False
-        # accept file if from NovelCraft+ and want that training set
-        else:
-            if self.split == split_enum.TRAIN:
-                return True
+            # accept file if from NovelCraft+ and want that training set
+            else:
+                if self.split == split_enum.TRAIN:
+                    return True
         # reject file if not above novel percentage
         cls_label = path.parts[-3]
         cur_id = "/".join(path.parts[-3:-1] + (path.stem,))

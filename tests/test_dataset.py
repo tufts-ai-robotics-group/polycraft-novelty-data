@@ -18,7 +18,7 @@ def test_novelcraft_len():
 def test_novelcraft_plus_len():
     # check length of datasets
     train_set = NovelCraft("train", training_plus=True)
-    assert len(train_set) == 138468
+    assert len(train_set) == 132673
 
 
 def test_episode_len():
