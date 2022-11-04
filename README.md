@@ -11,15 +11,15 @@ pip install pipenv
 ```
 The dependencies can be installed within a Pipenv with the following commands:
 ```
-pipenv install
+pipenv install --categories "packages torch_cpu"
 ```
-Pytorch may require different versions depending on the machine it is running on. If a non-default version of Pytorch is required then generate the appropriate Pip command on the [Pytorch website](https://pytorch.org/get-started/locally/) then run it within the Pipenv by prepending ```pipenv run``` to it.
+PyTorch may require different versions depending on the machine it is running on. The default command is for non-CUDA machines while swapping `torch_cpu` for `torch_cu116` installs PyTorch for CUDA 11.6. If a non-default version of PyTorch is required then generate the appropriate Pip command on the [PyTorch website](https://pytorch.org/get-started/locally/) then run it within the Pipenv by prepending ```pipenv run``` to it.
 
 #### Conda Installation
 
 The following instructions are **not recommended** unless you are unable to install a Python version compatible with the Pipenv.
 
-For this installation Pytorch will be installed in the Conda environment using the appropriate command according to the [Pytorch website](https://pytorch.org/get-started/locally/). For example:
+For this installation PyTorch will be installed in the Conda environment using the appropriate command according to the [PyTorch website](https://pytorch.org/get-started/locally/). For example:
 ```
 conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
 ```
