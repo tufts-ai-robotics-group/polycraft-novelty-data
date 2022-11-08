@@ -39,6 +39,8 @@ def collate_patches(dataset_entry):
 def default_dataloader_kwargs(
         batch_size: Optional[int] = 1,
         collate_fn=None):
+    if batch_size > 1 and collate_fn == collate_patches:
+        raise Exception("Attempting to collate patches with batch > 1 will concatenate patch sets")
     num_workers = 4
     prefetch_factor = 1 if batch_size is None else max(batch_size//num_workers, 1)
     dataloader_kwargs = {
