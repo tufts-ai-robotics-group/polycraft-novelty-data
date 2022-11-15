@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 # constants related to data paths
-DATA_URL = "https://tufts.box.com/shared/static/76qijr3y1vcawpbyforw4f235to0q679.zip"
+DATA_URL = "https://tufts.box.com/shared/static/zibydyymyv2tzh6fo5ni5i2oaibqsq5o.zip"
 with importlib.resources.path("polycraft_nov_data", "dataset") as dataset_root:
     DATASET_ROOT = Path(dataset_root)
 # constants related to shape of data
@@ -29,11 +29,15 @@ TEST_CLASSES = [
     "ArenaBlockHard",
     "fence",
     "tree_easy",
+    "supplier",
+    "thief",
 ]
 TEST_CLASS_FIRST_NOVEL_EP = {
     "ArenaBlockHard": 15,
     "fence": 14,
     "tree_easy": 15,
+    "supplier": 12,
+    "thief": 16,
     "normal": 999999,  # normal is never novel
 }
 ALL_CLASSES = NORMAL_CLASSES + TEST_CLASSES

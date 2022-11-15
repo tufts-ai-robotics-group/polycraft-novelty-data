@@ -28,6 +28,9 @@ def test_episode_len():
     valid_set = EpisodeDataset("valid")
     assert len(valid_set) == 489
     test_set = EpisodeDataset("test")
-    assert len(test_set) == 14718
     test_novel_set = EpisodeDataset("test_novel")
-    assert len(test_novel_set) == 14227
+    # check length of datasets
+    assert len(train_set) == 3917
+    assert len(valid_set) == 489
+    assert len(test_set) == 22187
+    assert len(test_novel_set) == 21696
