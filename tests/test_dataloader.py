@@ -22,6 +22,6 @@ def test_episode_loader_len():
     valid_loader = episode_dataloader("valid", batch_size=1)
     assert len(valid_loader) == 489
     test_loader = episode_dataloader("test", batch_size=1)
-    assert len(test_loader) == 14718
+    assert len(test_loader) == 22187
     test_novel_loader = episode_dataloader("test_novel", batch_size=1)
-    assert len(test_novel_loader) == 14227
+    assert len(test_novel_loader) == 21696
