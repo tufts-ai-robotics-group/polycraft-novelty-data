@@ -12,9 +12,16 @@ import polycraft_nov_data.episode_const as ep_const
 import polycraft_nov_data.novelcraft_const as nc_const
 
 
-def download_datasets():
+def download_datasets(refresh=False):
     """Download Polycraft datasets if not downloaded
+
+    Args:
+        refresh (bool, optional): Delete all folders to force redownload. Defaults to False.
     """
+    if refresh:
+        for f in nc_const.DATASET_ROOT.iterdir():
+            if f.is_dir():
+                shutil.rmtree(f)
     # assume data is downloaded if folder contains subfolders
     if sum((1 if f.is_dir() else 0) for f in nc_const.DATASET_ROOT.iterdir()) < 1:
         urls = [
