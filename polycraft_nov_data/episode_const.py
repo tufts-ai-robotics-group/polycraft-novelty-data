@@ -31,6 +31,7 @@ TEST_CLASSES = [
     "tree_easy",
     "supplier",
     "thief",
+    "rotten",
 ]
 TEST_CLASS_FIRST_NOVEL_EP = {
     "ArenaBlockHard": 15,
@@ -38,6 +39,7 @@ TEST_CLASS_FIRST_NOVEL_EP = {
     "tree_easy": 15,
     "supplier": 12,
     "thief": 16,
+    "rotten": 0,
     "normal": 999999,  # normal is never novel
 }
 ALL_CLASSES = NORMAL_CLASSES + TEST_CLASSES
