@@ -32,5 +32,5 @@ def test_episode_len():
     # check length of datasets
     assert len(train_set) == 3917
     assert len(valid_set) == 489
-    assert len(test_set) == 22187
-    assert len(test_novel_set) == 21696
+    assert len(test_set) == 26608
+    assert len(test_novel_set) == 26117
